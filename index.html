@@ -1,0 +1,774 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>质保验收报告</title>
+
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+
+<style>
+*{box-sizing:border-box}
+html,body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Microsoft YaHei",Arial,sans-serif;background:#eef2f7;color:#0f172a}
+.app{display:grid;grid-template-columns:360px 1fr;gap:14px;padding:14px;max-width:1680px;margin:0 auto}
+.panel,.preview-wrap{background:#fff;border-radius:16px;box-shadow:0 8px 28px rgba(15,23,42,.08)}
+.panel{padding:16px;max-height:calc(100vh - 28px);overflow:auto}
+.preview-wrap{padding:18px;overflow:auto;max-height:calc(100vh - 28px)}
+h1{font-size:24px;margin:0 0 10px;font-weight:900}
+.hint{font-size:13px;line-height:1.65;color:#64748b;margin-bottom:12px}
+.btns{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}
+button{border:0;border-radius:10px;padding:9px 12px;background:#0f172a;color:#fff;font-weight:900;cursor:pointer;font-size:14px}
+button.green{background:#16a34a}
+button.secondary{background:#e2e8f0;color:#0f172a}
+button.danger{background:#fee2e2;color:#991b1b}
+button:hover{filter:brightness(.96)}
+label{display:block;font-size:13px;font-weight:900;color:#334155;margin-top:10px}
+input,textarea,select{width:100%;border:1px solid #dbe3ef;border-radius:10px;padding:9px 10px;font-size:14px;outline:none;background:#fff;margin-top:5px}
+.usage{background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:12px;font-size:13px;line-height:1.7;margin-top:12px}
+.status{display:none;margin:10px 0;padding:10px 12px;border-radius:10px;background:#eff6ff;color:#1e3a8a;font-size:13px;font-weight:800;line-height:1.5}
+.status.show{display:block}
+.paper{width:794px;background:#fff;margin:0 auto;color:#111}
+.template-table{width:100%;border-collapse:collapse;table-layout:fixed;margin:0 0 22px 0;border:2px solid #111;background:#fff}
+.template-table td,.template-table th{border:1.4px solid #111;padding:6px;vertical-align:middle;font-size:13px;line-height:1.75;word-break:break-word;white-space:pre-line}
+.template-table td[contenteditable="true"]{outline:none}
+.template-table td[contenteditable="true"]:focus{box-shadow:inset 0 0 0 2px #2563eb;background:#eff6ff}
+.no-col{width:34px;text-align:center}
+.cat-col{width:78px;text-align:center;font-weight:900}
+.content-col{width:220px}
+.photo-col{width:175px;text-align:center}
+.result-col{width:70px;text-align:center;font-weight:900}
+.remark-col{width:74px;text-align:center}
+.title-cell{font-size:24px!important;font-weight:900;text-align:center;line-height:1.5!important}
+.station-cell{font-size:17px!important;font-weight:900;text-align:left}
+.meta-left-cell{font-size:15px!important;font-weight:900;text-align:left}
+.meta-right-cell{font-size:15px!important;font-weight:900;text-align:right}
+.header-cell{font-weight:900;text-align:center}
+.photo-box{min-height:72px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px}
+.photo-grid{display:flex;flex-direction:column;gap:8px;align-items:center;justify-content:flex-start;width:100%;max-width:100%;overflow:hidden}
+.photo-box img{width:145px;height:185px;max-width:145px;max-height:185px;object-fit:contain;display:block;margin:0 auto;border:1px solid #e5e7eb;background:#fff}
+.photo-tools{display:flex;gap:5px;justify-content:center;flex-wrap:wrap}
+.photo-tools button{font-size:11px;padding:4px 6px;border-radius:7px}
+.add-photo{background:#e2e8f0;color:#0f172a;font-size:12px;padding:7px 9px}
+.result-select{border:0;background:transparent;text-align:center;text-align-last:center;font-weight:900;width:100%;outline:none}
+.remark-col:empty::before{content:"点击填写备注";color:#94a3b8;font-size:12px}
+.file-input{display:none}
+.export-root{position:fixed;left:-100000px;top:0;width:794px;background:#fff;color:#111;z-index:-1}
+.export-root .paper{width:794px!important;margin:0!important;transform:none!important;background:#fff!important}
+.export-root button,.export-root input[type=file]{display:none!important}
+.export-root select{display:none!important}
+.export-result-text{display:inline-block;width:100%;text-align:center;font-weight:900}
+@media (max-width: 768px){
+  body{overflow-x:hidden}
+  .app{display:block;width:100%;padding:8px}
+  .panel{max-height:none;overflow:visible;margin-bottom:10px;padding:12px}
+  .preview-wrap{max-height:none;overflow:visible;padding:8px}
+  #paperScaleBox{width:100%;overflow:visible}
+  .paper{transform-origin:top left}
+}
+@media print{
+  body{background:#fff}
+  .panel{display:none!important}
+  .app{display:block;padding:0;margin:0;max-width:none}
+  .preview-wrap{box-shadow:none;border-radius:0;padding:0;overflow:visible;max-height:none}
+  .paper{width:100%;margin:0;transform:none!important}
+  button,input[type=file],select{display:none!important}
+}
+
+/* ===== 真DOCX + 真PDF直出版：不导出HTML，不导出假doc ===== */
+.photo-col{overflow:hidden!important;vertical-align:middle!important}
+.photo-box{width:100%!important;max-width:100%!important;overflow:hidden!important;text-align:center!important;padding:4px!important}
+.photo-grid{display:flex!important;flex-direction:column!important;gap:8px!important;align-items:center!important;width:100%!important;max-width:100%!important;overflow:hidden!important}
+.photo-grid>div{width:100%!important;overflow:hidden!important;text-align:center!important}
+.photo-box img{width:auto!important;max-width:150px!important;height:auto!important;max-height:190px!important;object-fit:contain!important;display:block!important;margin:2px auto!important;border:1px solid #e5e7eb!important;background:#fff!important}
+.photo-tools{display:flex!important;justify-content:center!important;gap:6px!important;margin:3px 0 6px!important}
+.photo-tools button,button[data-del-photo]{display:inline-block!important;background:#fee2e2!important;color:#991b1b!important;border:0!important;border-radius:8px!important;padding:3px 8px!important;font-size:11px!important;font-weight:900!important}
+.export-root{position:fixed;left:-100000px;top:0;width:794px;background:#fff;color:#111;z-index:-1}
+.export-root .paper{width:794px!important;min-width:794px!important;max-width:none!important;transform:none!important;background:#fff!important}
+.export-root .photo-col{overflow:hidden!important;vertical-align:middle!important}
+.export-root .photo-box{width:100%!important;max-width:100%!important;overflow:hidden!important;text-align:center!important;padding:4px!important}
+.export-root .photo-grid{display:flex!important;flex-direction:column!important;gap:8px!important;align-items:center!important;width:100%!important;max-width:100%!important;overflow:hidden!important}
+.export-root .photo-grid>div{width:100%!important;overflow:hidden!important;text-align:center!important}
+.export-root .photo-box img,.export-root img{width:auto!important;max-width:150px!important;height:auto!important;max-height:190px!important;object-fit:contain!important;display:block!important;margin:2px auto!important;border:1px solid #e5e7eb!important;background:#fff!important}
+.export-root .photo-tools,.export-root .add-photo,.export-root button,.export-root input[type=file]{display:none!important}
+.export-result-text{display:inline-block;width:100%;text-align:center;font-weight:900}
+
+
+/* ===== 文件大小控制版：图片清晰够用，整体体积可控 ===== */
+.photo-box img{
+  width:auto!important;
+  max-width:135px!important;
+  height:auto!important;
+  max-height:165px!important;
+  object-fit:contain!important;
+}
+.export-root .photo-box img,
+.export-root img{
+  width:auto!important;
+  max-width:135px!important;
+  height:auto!important;
+  max-height:165px!important;
+  object-fit:contain!important;
+}
+
+
+/* ===== 照片格式修正版：清楚但不乱版 ===== */
+.photo-col{overflow:hidden!important;vertical-align:middle!important}
+.photo-box{width:100%!important;max-width:100%!important;overflow:hidden!important;display:block!important;text-align:center!important;padding:4px!important}
+.photo-grid{display:flex!important;flex-direction:column!important;gap:8px!important;align-items:center!important;justify-content:flex-start!important;width:100%!important;max-width:100%!important;overflow:hidden!important}
+.photo-grid>div{width:145px!important;max-width:145px!important;min-height:185px!important;display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;overflow:hidden!important;text-align:center!important;margin:0 auto!important}
+.photo-box img{width:145px!important;height:185px!important;max-width:145px!important;max-height:185px!important;object-fit:contain!important;display:block!important;margin:0 auto!important;border:1px solid #e5e7eb!important;background:#fff!important}
+.photo-tools{display:flex!important;justify-content:center!important;gap:6px!important;margin:4px 0 0!important}
+.photo-tools button,button[data-del-photo]{display:inline-block!important;background:#fee2e2!important;color:#991b1b!important;border:0!important;border-radius:8px!important;padding:3px 8px!important;font-size:11px!important;font-weight:900!important}
+.export-root .photo-col{overflow:hidden!important;vertical-align:middle!important}
+.export-root .photo-box{width:100%!important;max-width:100%!important;overflow:hidden!important;text-align:center!important;padding:4px!important}
+.export-root .photo-grid{display:flex!important;flex-direction:column!important;gap:8px!important;align-items:center!important;justify-content:flex-start!important;width:100%!important;max-width:100%!important;overflow:hidden!important}
+.export-root .photo-grid>div{width:145px!important;max-width:145px!important;min-height:185px!important;display:flex!important;align-items:center!important;justify-content:center!important;overflow:hidden!important;text-align:center!important;margin:0 auto!important}
+.export-root .photo-box img,.export-root img{width:145px!important;height:185px!important;max-width:145px!important;max-height:185px!important;object-fit:contain!important;display:block!important;margin:0 auto!important;border:1px solid #e5e7eb!important;background:#fff!important}
+.export-root .photo-tools,.export-root .add-photo,.export-root button,.export-root input[type=file]{display:none!important}
+
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="panel">
+    <h1>质保验收报告</h1>
+    <div class="hint">照片格式修正版：照片清楚且固定在记录方式栏内，不再拉伸变形；Word可编辑，PDF可直出。</div>
+    <div class="btns">
+      <button id="exportWordBtn" type="button" onclick="exportWordEditable()">导出 Word</button>
+      <button id="exportPdfBtn" type="button" class="green" onclick="exportPDF()">导出 PDF</button>
+      <button id="saveBtn" type="button" class="secondary" onclick="saveData()">保存数据</button>
+      <button id="loadBtn" type="button" class="secondary" onclick="document.getElementById('loadFile').click()">读取数据</button>
+      <input id="loadFile" class="file-input" type="file" accept=".json,application/json">
+    </div>
+    <div id="status" class="status"></div>
+
+    <label>报告标题</label>
+    <input id="reportTitle" value="理想汽车超充站质保验收报告">
+
+    <label>场站名称</label>
+    <input id="stationName" value="理想超充站 杭州浙大网新">
+
+    <label>验收人员</label>
+    <input id="inspector" value="">
+
+    <label>验收日期</label>
+    <input id="acceptDate" type="date" value="2026-05-16">
+
+    <div class="usage">
+      <b>使用说明：</b><br>
+      1. 表格内容可在右侧直接点击编辑。<br>
+      2. 记录方式列点击“添加照片”。<br>
+      3. 检查结果可选：合格 / 不合格 / 不涉及。<br>
+      4. 导出 PDF 为直出文件，不需要手动打印。<br>
+      5. Word为真实可编辑表格；照片固定规格显示，避免版式异常。
+    </div>
+  </aside>
+
+  <main class="preview-wrap">
+    <div id="paperScaleBox">
+      <div id="paper" class="paper"></div>
+    </div>
+  </main>
+</div>
+
+<script>
+let tables = [{"index": 0, "rows": [[{"id": "t0_r0_c0", "text": "理想汽车超充站质保验收报告", "col": 0, "colspan": 6, "rowspan": 1, "classes": "no-col", "photos": [], "isPhoto": false}], [{"id": "t0_r1_c0", "text": "场站名称：理想超充站 杭州浙大网新", "col": 0, "colspan": 6, "rowspan": 1, "classes": "no-col", "photos": [], "isPhoto": false}], [{"id": "header_inspector", "text": "验收人员：", "col": 0, "colspan": 3, "rowspan": 1, "classes": "meta-left-cell", "photos": [], "isPhoto": false}, {"id": "header_date", "text": "验收日期：2026-05-16", "col": 3, "colspan": 3, "rowspan": 1, "classes": "meta-right-cell", "photos": [], "isPhoto": false}], [{"id": "t0_r3_c0", "text": "序号", "col": 0, "colspan": 1, "rowspan": 1, "classes": "no-col", "photos": [], "isPhoto": false}, {"id": "t0_r3_c1", "text": "二级类别", "col": 1, "colspan": 1, "rowspan": 1, "classes": "cat-col", "photos": [], "isPhoto": false}, {"id": "t0_r3_c2", "text": "验收内容", "col": 2, "colspan": 1, "rowspan": 1, "classes": "content-col", "photos": [], "isPhoto": false}, {"id": "t0_r3_c3", "text": "记录方式", "col": 3, "colspan": 1, "rowspan": 1, "classes": "photo-col", "photos": [], "isPhoto": false}, {"id": "t0_r3_c4", "text": "检查结果", "col": 4, "colspan": 1, "rowspan": 1, "classes": "result-col", "photos": [], "isPhoto": false}, {"id": "t0_r3_c5", "text": "备注", "col": 5, "colspan": 1, "rowspan": 1, "classes": "remark-col", "photos": [], "isPhoto": false}], [{"id": "t0_r4_c0", "text": "1", "col": 0, "colspan": 1, "rowspan": 1, "classes": "no-col", "photos": [], "isPhoto": false}, {"id": "t0_r4_c1", "text": "场站整体概况", "col": 1, "colspan": 1, "rowspan": 5, "classes": "cat-col", "photos": [], "isPhoto": false}, {"id": "t0_r4_c2", "text": "导引牌/操作指引牌/价格公示牌：安装牢固，无松动；", "col": 2, "colspan": 1, "rowspan": 1, "classes": "content-col", "photos": [], "isPhoto": false}, {"id": "t0_r4_c3", "text": "", "col": 3, "colspan": 1, "rowspan": 1, "classes": "photo-col", "photos": [], "isPhoto": true}, {"id": "t0_r4_c4", "text": "合格", "col": 4, "colspan": 1, "rowspan": 1, "classes": "result-col", "photos": [], "isPhoto": false}, {"id": "t0_r4_c5", "text": "", "col": 5, "colspan": 1, "rowspan": 1, "classes": "remark-col", "photos": [], "isPhoto": false}], [{"id": "t0_r5_c0", "text": "2", "col": 0, "colspan": 1, "rowspan": 1, "classes": "no-col", "photos": [], "isPhoto": false}, {"id": "t0_r5_c2", "text": "雨棚：雨棚完好安装牢固无晃动；膜结构无破损，钢结构大面积掉漆、锈蚀等现象。", "col": 2, "colspan": 1, "rowspan": 1, "classes": "content-col", "photos": [], "isPhoto": false}, {"id": "t0_r5_c3", "text": "", "col": 3, "colspan": 1, "rowspan": 1, "classes": "photo-col", "photos": [], "isPhoto": true}, {"id": "t0_r5_c4", "text": "合格", "col": 4, "colspan": 1, "rowspan": 1, "classes": "result-col", "photos": [], "isPhoto": false}, {"id": "t0_r5_c5", "text": "", "col": 5, "colspan": 1, "rowspan": 1, "classes": "remark-col", "photos": [], "isPhoto": false}], [{"id": "t0_r6_c0", "text": "", "col": 0, "colspan": 1, "rowspan": 1, "classes": "no-col", "photos": [], "isPhoto": false}, {"id": "t0_r6_c2", "text": "龙门架：\n安装牢固无松动、摇晃；表面无锈蚀，漆面无脱落、空鼓，颜色无明显偏差。", "col": 2, "colspan": 1, "rowspan": 1, "classes": "content-col", "photos": [], "isPhoto": false}, {"id": "t0_r6_c3", "text": "", "col": 3, "colspan": 1, "rowspan": 1, "classes": "photo-col", "photos": [], "isPhoto": true}, {"id": "t0_r6_c4", "text": "合格", "col": 4, "colspan": 1, "rowspan": 1, "classes": "result-col", "photos": [], "isPhoto": false}, {"id": "t0_r6_c5_auto_remark", "text": "", "col": 5, "colspan": 1, "rowspan": 1, "classes": "remark-col", "photos": [], "isPhoto": false}], [{"id": "t0_r7_c0", "text": "3", "col": 0, "colspan": 1, "rowspan": 1, "classes": "no-col", "photos": [], "isPhoto": false}, {"id": "t0_r7_c2", "text": "LOGO牌：LOGO牌安装牢固，无松动、晃动、破损。LOGO牌保险链无脱落、破损。", "col": 2, "colspan": 1, "rowspan": 1, "classes": "content-col", "photos": [], "isPhoto": false}, {"id": "t0_r7_c3", "text": "", "col": 3, "colspan": 1, "rowspan": 1, "classes": "photo-col", "photos": [], "isPhoto": true}, {"id": "t0_r7_c4", "text": "合格", "col": 4, "colspan": 1, "rowspan": 1, "classes": "result-col", "photos": [], "isPhoto": false}, {"id": "t0_r7_c5", "text": "", "col": 5, "colspan": 1, "rowspan": 1, "classes": "remark-col", "photos": [], "isPhoto": false}], [{"id": "t0_r8_c0", "text": "4", "col": 0, "colspan": 1, "rowspan": 1, "classes": "no-col", "photos": [], "isPhoto": false}, {"id": "t0_r8_c2", "text": "车挡器：车挡器安装牢固，无松动、歪斜、缺失；机构完好，无明显变形。", "col": 2, "colspan": 1, "rowspan": 1, "classes": "content-col", "photos": [], "isPhoto": false}, {"id": "t0_r8_c3", "text": "", "col": 3, "colspan": 1, "rowspan": 1, "classes": "photo-col", "photos": [], "isPhoto": true}, {"id": "t0_r8_c4", "text": "合格", "col": 4, "colspan": 1, "rowspan": 1, "classes": "result-col", "photos": [], "isPhoto": false}, {"id": "t0_r8_c5", "text": "", "col": 5, "colspan": 1, "rowspan": 1, "classes": "remark-col", "photos": [], "isPhoto": false}]]}, {"index": 1, "rows": [[{"id": "t1_r0_c0", "text": "5", "col": 0, "colspan": 1, "rowspan": 1, "classes": "no-col", "photos": [], "isPhoto": false}, {"id": "t1_r0_c1", "text": "场站整体概况", "col": 1, "colspan": 1, "rowspan": 3, "classes": "cat-col", "photos": [], "isPhoto": false}, {"id": "t1_r0_c2", "text": "车位：车位线及车位号完整，无缺失、破损；车位平整，无明显沉降（1cm），无坑洼、空鼓、破损现象。若场站涉及涂装，涂装无明显色差、裂缝、空鼓、脱落等。", "col": 2, "colspan": 1, "rowspan": 1, "classes": "content-col", "photos": [], "isPhoto": false}, {"id": "t1_r0_c3", "text": "", "col": 3, "colspan": 1, "rowspan": 1, "classes": "photo-col", "photos": [], "isPhoto": true}, {"id": "t1_r0_c4", "text": "合格", "col": 4, "colspan": 1, "rowspan": 1, "classes": "result-col", "photos": [], "isPhoto": false}, {"id": "t1_r0_c5", "text": "", "col": 5, "colspan": 1, "rowspan": 1, "classes": "remark-col", "photos": [], "isPhoto": false}], [{"id": "t1_r1_c0", "text": "6", "col": 0, "colspan": 1, "rowspan": 1, "classes": "no-col", "photos": [], "isPhoto": false}, {"id": "t1_r1_c2", "text": "基础：\n箱变/配电箱/终端/主机/品牌柱等基础无明显沉降（1cm）、倾斜、断裂等；面层无明显裂缝、蜂窝、麻面、露筋等；表面有涂刷的无明显色差、裂缝、空鼓、脱落等", "col": 2, "colspan": 1, "rowspan": 1, "classes": "content-col", "photos": [], "isPhoto": false}, {"id": "t1_r1_c3", "text": "", "col": 3, "colspan": 1, "rowspan": 1, "classes": "photo-col", "photos": [], "isPhoto": true}, {"id": "t1_r1_c4", "text": "合格", "col": 4, "colspan": 1, "rowspan": 1, "classes": "result-col", "photos": [], "isPhoto": false}, {"id": "t1_r1_c5", "text": "", "col": 5, "colspan": 1, "rowspan": 1, "classes": "remark-col", "photos": [], "isPhoto": false}], [{"id": "t1_r2_c0", "text": "7", "col": 0, "colspan": 1, "rowspan": 1, "classes": "no-col", "photos": [], "isPhoto": false}, {"id": "t1_r2_c2", "text": "灭火器：灭火器压力在正常范围内，无欠压/过压现象； ", "col": 2, "colspan": 1, "rowspan": 1, "classes": "content-col", "photos": [], "isPhoto": false}, {"id": "t1_r2_c3", "text": "", "col": 3, "colspan": 1, "rowspan": 1, "classes": "photo-col", "photos": [], "isPhoto": true}, {"id": "t1_r2_c4", "text": "合格", "col": 4, "colspan": 1, "rowspan": 1, "classes": "result-col", "photos": [], "isPhoto": false}, {"id": "t1_r2_c5", "text": "", "col": 5, "colspan": 1, "rowspan": 1, "classes": "remark-col", "photos": [], "isPhoto": false}]]}, {"index": 2, "rows": [[{"id": "t2_r0_c0", "text": "8", "col": 0, "colspan": 1, "rowspan": 1, "classes": "no-col", "photos": [], "isPhoto": false}, {"id": "t2_r0_c1", "text": "场站整体概况", "col": 1, "colspan": 1, "rowspan": 2, "classes": "cat-col", "photos": [], "isPhoto": false}, {"id": "t2_r0_c2", "text": "照明：照明设施完整，无损坏，可正常点亮；固定牢固可靠，无松动、角度异常现象", "col": 2, "colspan": 1, "rowspan": 1, "classes": "content-col", "photos": [], "isPhoto": false}, {"id": "t2_r0_c3", "text": "", "col": 3, "colspan": 1, "rowspan": 1, "classes": "photo-col", "photos": [], "isPhoto": true}, {"id": "t2_r0_c4", "text": "合格", "col": 4, "colspan": 1, "rowspan": 1, "classes": "result-col", "photos": [], "isPhoto": false}, {"id": "t2_r0_c5", "text": "", "col": 5, "colspan": 1, "rowspan": 1, "classes": "remark-col", "photos": [], "isPhoto": false}], [{"id": "t2_r1_c0", "text": "9", "col": 0, "colspan": 1, "rowspan": 1, "classes": "no-col", "photos": [], "isPhoto": false}, {"id": "t2_r1_c2", "text": "监控：摄像头功能正常；摄像头安装牢固；监控杆无松动摇晃、歪斜现象；监控杆无锈蚀、漆面脱落现象", "col": 2, "colspan": 1, "rowspan": 1, "classes": "content-col", "photos": [], "isPhoto": false}, {"id": "t2_r1_c3", "text": "", "col": 3, "colspan": 1, "rowspan": 1, "classes": "photo-col", "photos": [], "isPhoto": true}, {"id": "t2_r1_c4", "text": "合格", "col": 4, "colspan": 1, "rowspan": 1, "classes": "result-col", "photos": [], "isPhoto": false}, {"id": "t2_r1_c5", "text": "", "col": 5, "colspan": 1, "rowspan": 1, "classes": "remark-col", "photos": [], "isPhoto": false}], [{"id": "t2_r2_c0", "text": "10", "col": 0, "colspan": 1, "rowspan": 1, "classes": "no-col", "photos": [], "isPhoto": false}, {"id": "t2_r2_c1", "text": "箱变整体外观", "col": 1, "colspan": 1, "rowspan": 1, "classes": "cat-col", "photos": [], "isPhoto": false}, {"id": "t2_r2_c2", "text": "运行：连续均匀的嗡嗡声，无异常声响", "col": 2, "colspan": 1, "rowspan": 1, "classes": "content-col", "photos": [], "isPhoto": false}, {"id": "t2_r2_c3", "text": "", "col": 3, "colspan": 1, "rowspan": 1, "classes": "photo-col", "photos": [], "isPhoto": true}, {"id": "t2_r2_c4", "text": "合格", "col": 4, "colspan": 1, "rowspan": 1, "classes": "result-col", "photos": [], "isPhoto": false}, {"id": "t2_r2_c5", "text": "", "col": 5, "colspan": 1, "rowspan": 1, "classes": "remark-col", "photos": [], "isPhoto": false}], [{"id": "t2_r3_c0", "text": "11", "col": 0, "colspan": 1, "rowspan": 1, "classes": "no-col", "photos": [], "isPhoto": false}, {"id": "t2_r3_c1", "text": "箱变整体外观", "col": 1, "colspan": 1, "rowspan": 3, "classes": "cat-col", "photos": [], "isPhoto": false}, {"id": "t2_r3_c2", "text": "围栏：围栏安装牢固、水平、竖直，无晃动歪斜，无明显锈蚀", "col": 2, "colspan": 1, "rowspan": 1, "classes": "content-col", "photos": [], "isPhoto": false}, {"id": "t2_r3_c3", "text": "", "col": 3, "colspan": 1, "rowspan": 1, "classes": "photo-col", "photos": [], "isPhoto": true}, {"id": "t2_r3_c4", "text": "", "col": 4, "colspan": 1, "rowspan": 1, "classes": "result-col", "photos": [], "isPhoto": false}, {"id": "t2_r3_c5", "text": "", "col": 5, "colspan": 1, "rowspan": 1, "classes": "remark-col", "photos": [], "isPhoto": false}], [{"id": "t2_r4_c0", "text": "12", "col": 0, "colspan": 1, "rowspan": 1, "classes": "no-col", "photos": [], "isPhoto": false}, {"id": "t2_r4_c2", "text": "接地：外壳有两个不同的接地点，且已刷黄绿警示漆或黑漆，接地扁铁无锈蚀断裂，紧固或焊接牢固", "col": 2, "colspan": 1, "rowspan": 1, "classes": "content-col", "photos": [], "isPhoto": false}, {"id": "t2_r4_c3", "text": "", "col": 3, "colspan": 1, "rowspan": 1, "classes": "photo-col", "photos": [], "isPhoto": true}, {"id": "t2_r4_c4", "text": "合格", "col": 4, "colspan": 1, "rowspan": 1, "classes": "result-col", "photos": [], "isPhoto": false}, {"id": "t2_r4_c5", "text": "", "col": 5, "colspan": 1, "rowspan": 1, "classes": "remark-col", "photos": [], "isPhoto": false}], [{"id": "t2_r5_c0", "text": "13", "col": 0, "colspan": 1, "rowspan": 1, "classes": "no-col", "photos": [], "isPhoto": false}, {"id": "t2_r5_c2", "text": "标识：安全标识齐全，无缺失、褪色", "col": 2, "colspan": 1, "rowspan": 1, "classes": "content-col", "photos": [], "isPhoto": false}, {"id": "t2_r5_c3", "text": "", "col": 3, "colspan": 1, "rowspan": 1, "classes": "photo-col", "photos": [], "isPhoto": true}, {"id": "t2_r5_c4", "text": "合格", "col": 4, "colspan": 1, "rowspan": 1, "classes": "result-col", "photos": [], "isPhoto": false}, {"id": "t2_r5_c5", "text": "", "col": 5, "colspan": 1, "rowspan": 1, "classes": "remark-col", "photos": [], "isPhoto": false}], [{"id": "t2_r6_c0", "text": "14", "col": 0, "colspan": 1, "rowspan": 1, "classes": "no-col", "photos": [], "isPhoto": false}, {"id": "t2_r6_c1", "text": "箱变高压室进线柜", "col": 1, "colspan": 1, "rowspan": 3, "classes": "cat-col", "photos": [], "isPhoto": false}, {"id": "t2_r6_c2", "text": "1. 断路器、负荷开关指示在合闸位置", "col": 2, "colspan": 1, "rowspan": 1, "classes": "content-col", "photos": [], "isPhoto": false}, {"id": "t2_r6_c3", "text": "", "col": 3, "colspan": 1, "rowspan": 3, "classes": "photo-col", "photos": [], "isPhoto": true}, {"id": "t2_r6_c4", "text": "合格", "col": 4, "colspan": 1, "rowspan": 1, "classes": "result-col", "photos": [], "isPhoto": false}, {"id": "t2_r6_c5", "text": "", "col": 5, "colspan": 1, "rowspan": 1, "classes": "remark-col", "photos": [], "isPhoto": false}], [{"id": "t2_r7_c0", "text": "15", "col": 0, "colspan": 1, "rowspan": 1, "classes": "no-col", "photos": [], "isPhoto": false}, {"id": "t2_r7_c2", "text": "2. 小车在工作位（手车式断路器）", "col": 2, "colspan": 1, "rowspan": 1, "classes": "content-col", "photos": [], "isPhoto": false}, {"id": "t2_r7_c4", "text": "合格", "col": 4, "colspan": 1, "rowspan": 1, "classes": "result-col", "photos": [], "isPhoto": false}, {"id": "t2_r7_c5", "text": "", "col": 5, "colspan": 1, "rowspan": 1, "classes": "remark-col", "photos": [], "isPhoto": false}], [{"id": "t2_r8_c0", "text": "16", "col": 0, "colspan": 1, "rowspan": 1, "classes": "no-col", "photos": [], "isPhoto": false}, {"id": "t2_r8_c2", "text": "3. 隔离开关在合闸位置", "col": 2, "colspan": 1, "rowspan": 1, "classes": "content-col", "photos": [], "isPhoto": false}, {"id": "t2_r8_c4", "text": "合格", "col": 4, "colspan": 1, "rowspan": 1, "classes": "result-col", "photos": [], "isPhoto": false}, {"id": "t2_r8_c5", "text": "", "col": 5, "colspan": 1, "rowspan": 1, "classes": "remark-col", "photos": [], "isPhoto": false}]]}, {"index": 3, "rows": [[{"id": "t3_r0_c0", "text": "17", "col": 0, "colspan": 1, "rowspan": 1, "classes": "no-col", "photos": [], "isPhoto": false}, {"id": "t3_r0_c1", "text": "箱变高压室进线柜", "col": 1, "colspan": 1, "rowspan": 11, "classes": "cat-col", "photos": [], "isPhoto": false}, {"id": "t3_r0_c2", "text": "4. 接地开关在分闸位置", "col": 2, "colspan": 1, "rowspan": 1, "classes": "content-col", "photos": [], "isPhoto": false}, {"id": "t3_r0_c3", "text": "", "col": 3, "colspan": 1, "rowspan": 11, "classes": "photo-col", "photos": [], "isPhoto": true}, {"id": "t3_r0_c4", "text": "合格", "col": 4, "colspan": 1, "rowspan": 1, "classes": "result-col", "photos": [], "isPhoto": false}, {"id": "t3_r0_c5", "text": "", "col": 5, "colspan": 1, "rowspan": 1, "classes": "remark-col", "photos": [], "isPhoto": false}], [{"id": "t3_r1_c0", "text": "18", "col": 0, "colspan": 1, "rowspan": 1, "classes": "no-col", "photos": [], "isPhoto": false}, {"id": "t3_r1_c2", "text": "5. 断路器机构已储能，储能指示灯亮", "col": 2, "colspan": 1, "rowspan": 1, "classes": "content-col", "photos": [], "isPhoto": false}, {"id": "t3_r1_c4", "text": "合格", "col": 4, "colspan": 1, "rowspan": 1, "classes": "result-col", "photos": [], "isPhoto": false}, {"id": "t3_r1_c5", "text": "", "col": 5, "colspan": 1, "rowspan": 1, "classes": "remark-col", "photos": [], "isPhoto": false}], [{"id": "t3_r2_c0", "text": "19", "col": 0, "colspan": 1, "rowspan": 1, "classes": "no-col", "photos": [], "isPhoto": false}, {"id": "t3_r2_c2", "text": "6. 故障指示灯全灭", "col": 2, "colspan": 1, "rowspan": 1, "classes": "content-col", "photos": [], "isPhoto": false}, {"id": "t3_r2_c4", "text": "合格", "col": 4, "colspan": 1, "rowspan": 1, "classes": "result-col", "photos": [], "isPhoto": false}, {"id": "t3_r2_c5", "text": "", "col": 5, "colspan": 1, "rowspan": 1, "classes": "remark-col", "photos": [], "isPhoto": false}], [{"id": "t3_r3_c0", "text": "20", "col": 0, "colspan": 1, "rowspan": 1, "classes": "no-col", "photos": [], "isPhoto": false}, {"id": "t3_r3_c2", "text": "7. 带电显示器指示三相带电", "col": 2, "colspan": 1, "rowspan": 1, "classes": "content-col", "photos": [], "isPhoto": false}, {"id": "t3_r3_c4", "text": "", "col": 4, "colspan": 1, "rowspan": 1, "classes": "result-col", "photos": [], "isPhoto": false}, {"id": "t3_r3_c5", "text": "", "col": 5, "colspan": 1, "rowspan": 1, "classes": "remark-col", "photos": [], "isPhoto": false}], [{"id": "t3_r4_c0", "text": "21", "col": 0, "colspan": 1, "rowspan": 1, "classes": "no-col", "photos": [], "isPhoto": false}, {"id": "t3_r4_c2", "text": "8. 柜门解闭锁位于闭锁位置", "col": 2, "colspan": 1, "rowspan": 1, "classes": "content-col", "photos": [], "isPhoto": false}, {"id": "t3_r4_c4", "text": "合格", "col": 4, "colspan": 1, "rowspan": 1, "classes": "result-col", "photos": [], "isPhoto": false}, {"id": "t3_r4_c5", "text": "", "col": 5, "colspan": 1, "rowspan": 1, "classes": "remark-col", "photos": [], "isPhoto": false}], [{"id": "t3_r5_c0", "text": "22", "col": 0, "colspan": 1, "rowspan": 1, "classes": "no-col", "photos": [], "isPhoto": false}, {"id": "t3_r5_c2", "text": "9. 分断闭锁把手位于工作位置", "col": 2, "colspan": 1, "rowspan": 1, "classes": "content-col", "photos": [], "isPhoto": false}, {"id": "t3_r5_c4", "text": "合格", "col": 4, "colspan": 1, "rowspan": 1, "classes": "result-col", "photos": [], "isPhoto": false}, {"id": "t3_r5_c5", "text": "", "col": 5, "colspan": 1, "rowspan": 1, "classes": "remark-col", "photos": [], "isPhoto": false}], [{"id": "t3_r6_c0", "text": "23", "col": 0, "colspan": 1, "rowspan": 1, "classes": "no-col", "photos": [], "isPhoto": false}, {"id": "t3_r6_c2", "text": "10. SF6表计压力在绿色范围内，且与上次相比无明显下降（首次验收需在指针指示值划线）", "col": 2, "colspan": 1, "rowspan": 1, "classes": "content-col", "photos": [], "isPhoto": false}, {"id": "t3_r6_c4", "text": "合格", "col": 4, "colspan": 1, "rowspan": 1, "classes": "result-col", "photos": [], "isPhoto": false}, {"id": "t3_r6_c5", "text": "", "col": 5, "colspan": 1, "rowspan": 1, "classes": "remark-col", "photos": [], "isPhoto": false}], [{"id": "t3_r7_c0", "text": "24", "col": 0, "colspan": 1, "rowspan": 1, "classes": "no-col", "photos": [], "isPhoto": false}, {"id": "t3_r7_c2", "text": "11. 微机保护装置无异常报警、跳闸信号，装置无死机，在线测量电压、电流正确", "col": 2, "colspan": 1, "rowspan": 1, "classes": "content-col", "photos": [], "isPhoto": false}, {"id": "t3_r7_c4", "text": "合格", "col": 4, "colspan": 1, "rowspan": 1, "classes": "result-col", "photos": [], "isPhoto": false}, {"id": "t3_r7_c5", "text": "", "col": 5, "colspan": 1, "rowspan": 1, "classes": "remark-col", "photos": [], "isPhoto": false}], [{"id": "t3_r8_c0", "text": "25", "col": 0, "colspan": 1, "rowspan": 1, "classes": "no-col", "photos": [], "isPhoto": false}, {"id": "t3_r8_c2", "text": "12. 柜体无异常声响", "col": 2, "colspan": 1, "rowspan": 1, "classes": "content-col", "photos": [], "isPhoto": false}, {"id": "t3_r8_c4", "text": "合格", "col": 4, "colspan": 1, "rowspan": 1, "classes": "result-col", "photos": [], "isPhoto": false}, {"id": "t3_r8_c5", "text": "", "col": 5, "colspan": 1, "rowspan": 1, "classes": "remark-col", "photos": [], "isPhoto": false}], [{"id": "t3_r9_c0", "text": "26", "col": 0, "colspan": 1, "rowspan": 1, "classes": "no-col", "photos": [], "isPhoto": false}, {"id": "t3_r9_c2", "text": "13. 温湿度控制器运行正常", "col": 2, "colspan": 1, "rowspan": 1, "classes": "content-col", "photos": [], "isPhoto": false}, {"id": "t3_r9_c4", "text": "合格", "col": 4, "colspan": 1, "rowspan": 1, "classes": "result-col", "photos": [], "isPhoto": false}, {"id": "t3_r9_c5", "text": "", "col": 5, "colspan": 1, "rowspan": 1, "classes": "remark-col", "photos": [], "isPhoto": false}], [{"id": "t3_r10_c0", "text": "27", "col": 0, "colspan": 1, "rowspan": 1, "classes": "no-col", "photos": [], "isPhoto": false}, {"id": "t3_r10_c2", "text": "14. 玻璃观察窗无凝露，窗内无放电打火现象", "col": 2, "colspan": 1, "rowspan": 1, "classes": "content-col", "photos": [], "isPhoto": false}, {"id": "t3_r10_c4", "text": "合格", "col": 4, "colspan": 1, "rowspan": 1, "classes": "result-col", "photos": [], "isPhoto": false}, {"id": "t3_r10_c5", "text": "", "col": 5, "colspan": 1, "rowspan": 1, "classes": "remark-col", "photos": [], "isPhoto": false}], [{"id": "t3_r11_c0", "text": "28", "col": 0, "colspan": 1, "rowspan": 1, "classes": "no-col", "photos": [], "isPhoto": false}, {"id": "t3_r11_c1", "text": "箱变高压室\n出线柜", "col": 1, "colspan": 1, "rowspan": 8, "classes": "cat-col", "photos": [], "isPhoto": false}, {"id": "t3_r11_c2", "text": "1. 断路器、负荷开关指示在合闸位置", "col": 2, "colspan": 1, "rowspan": 1, "classes": "content-col", "photos": [], "isPhoto": false}, {"id": "t3_r11_c3", "text": "", "col": 3, "colspan": 1, "rowspan": 8, "classes": "photo-col", "photos": [], "isPhoto": true}, {"id": "t3_r11_c4", "text": "合格", "col": 4, "colspan": 1, "rowspan": 1, "classes": "result-col", "photos": [], "isPhoto": false}, {"id": "t3_r11_c5", "text": "", "col": 5, "colspan": 1, "rowspan": 1, "classes": "remark-col", "photos": [], "isPhoto": false}], [{"id": "t3_r12_c0", "text": "29", "col": 0, "colspan": 1, "rowspan": 1, "classes": "no-col", "photos": [], "isPhoto": false}, {"id": "t3_r12_c2", "text": "2. 小车在工作位（手车式断路器）", "col": 2, "colspan": 1, "rowspan": 1, "classes": "content-col", "photos": [], "isPhoto": false}, {"id": "t3_r12_c4", "text": "合格", "col": 4, "colspan": 1, "rowspan": 1, "classes": "result-col", "photos": [], "isPhoto": false}, {"id": "t3_r12_c5", "text": "", "col": 5, "colspan": 1, "rowspan": 1, "classes": "remark-col", "photos": [], "isPhoto": false}], [{"id": "t3_r13_c0", "text": "30", "col": 0, "colspan": 1, "rowspan": 1, "classes": "no-col", "photos": [], "isPhoto": false}, {"id": "t3_r13_c2", "text": "3. 隔离开关在合闸位置", "col": 2, "colspan": 1, "rowspan": 1, "classes": "content-col", "photos": [], "isPhoto": false}, {"id": "t3_r13_c4", "text": "合格", "col": 4, "colspan": 1, "rowspan": 1, "classes": "result-col", "photos": [], "isPhoto": false}, {"id": "t3_r13_c5", "text": "", "col": 5, "colspan": 1, "rowspan": 1, "classes": "remark-col", "photos": [], "isPhoto": false}], [{"id": "t3_r14_c0", "text": "31", "col": 0, "colspan": 1, "rowspan": 1, "classes": "no-col", "photos": [], "isPhoto": false}, {"id": "t3_r14_c2", "text": "4. 接地开关在分闸位置", "col": 2, "colspan": 1, "rowspan": 1, "classes": "content-col", "photos": [], "isPhoto": false}, {"id": "t3_r14_c4", "text": "合格", "col": 4, "colspan": 1, "rowspan": 1, "classes": "result-col", "photos": [], "isPhoto": false}, {"id": "t3_r14_c5", "text": "", "col": 5, "colspan": 1, "rowspan": 1, "classes": "remark-col", "photos": [], "isPhoto": false}], [{"id": "t3_r15_c0", "text": "32", "col": 0, "colspan": 1, "rowspan": 1, "classes": "no-col", "photos": [], "isPhoto": false}, {"id": "t3_r15_c2", "text": "5. 断路器机构已储能，储能指示灯亮", "col": 2, "colspan": 1, "rowspan": 1, "classes": "content-col", "photos": [], "isPhoto": false}, {"id": "t3_r15_c4", "text": "合格", "col": 4, "colspan": 1, "rowspan": 1, "classes": "result-col", "photos": [], "isPhoto": false}, {"id": "t3_r15_c5", "text": "", "col": 5, "colspan": 1, "rowspan": 1, "classes": "remark-col", "photos": [], "isPhoto": false}], [{"id": "t3_r16_c0", "text": "33", "col": 0, "colspan": 1, "rowspan": 1, "classes": "no-col", "photos": [], "isPhoto": false}, {"id": "t3_r16_c2", "text": "6. 故障指示灯全灭", "col": 2, "colspan": 1, "rowspan": 1, "classes": "content-col", "photos": [], "isPhoto": false}, {"id": "t3_r16_c4", "text": "合格", "col": 4, "colspan": 1, "rowspan": 1, "classes": "result-col", "photos": [], "isPhoto": false}, {"id": "t3_r16_c5", "text": "", "col": 5, "colspan": 1, "rowspan": 1, "classes": "remark-col", "photos": [], "isPhoto": false}], [{"id": "t3_r17_c0", "text": "34", "col": 0, "colspan": 1, "rowspan": 1, "classes": "no-col", "photos": [], "isPhoto": false}, {"id": "t3_r17_c2", "text": "7. 带电显示器指示三相带电", "col": 2, "colspan": 1, "rowspan": 1, "classes": "content-col", "photos": [], "isPhoto": false}, {"id": "t3_r17_c4", "text": "合格", "col": 4, "colspan": 1, "rowspan": 1, "classes": "result-col", "photos": [], "isPhoto": false}, {"id": "t3_r17_c5", "text": "", "col": 5, "colspan": 1, "rowspan": 1, "classes": "remark-col", "photos": [], "isPhoto": false}], [{"id": "t3_r18_c0", "text": "35", "col": 0, "colspan": 1, "rowspan": 1, "classes": "no-col", "photos": [], "isPhoto": false}, {"id": "t3_r18_c2", "text": "8. 柜门解闭锁位于闭锁位置", "col": 2, "colspan": 1, "rowspan": 1, "classes": "content-col", "photos": [], "isPhoto": false}, {"id": "t3_r18_c4", "text": "合格", "col": 4, "colspan": 1, "rowspan": 1, "classes": "result-col", "photos": [], "isPhoto": false}, {"id": "t3_r18_c5", "text": "", "col": 5, "colspan": 1, "rowspan": 1, "classes": "remark-col", "photos": [], "isPhoto": false}]]}, {"index": 4, "rows": [[{"id": "t4_r0_c0", "text": "36", "col": 0, "colspan": 1, "rowspan": 1, "classes": "no-col", "photos": [], "isPhoto": false}, {"id": "t4_r0_c1", "text": "箱变高压室\n出线柜", "col": 1, "colspan": 1, "rowspan": 7, "classes": "cat-col", "photos": [], "isPhoto": false}, {"id": "t4_r0_c2", "text": "9.分断闭锁把手位于工作位置", "col": 2, "colspan": 1, "rowspan": 1, "classes": "content-col", "photos": [], "isPhoto": false}, {"id": "t4_r0_c3", "text": "", "col": 3, "colspan": 1, "rowspan": 7, "classes": "photo-col", "photos": [], "isPhoto": true}, {"id": "t4_r0_c4", "text": "合格", "col": 4, "colspan": 1, "rowspan": 1, "classes": "result-col", "photos": [], "isPhoto": false}, {"id": "t4_r0_c5", "text": "", "col": 5, "colspan": 1, "rowspan": 1, "classes": "remark-col", "photos": [], "isPhoto": false}], [{"id": "t4_r1_c0", "text": "37", "col": 0, "colspan": 1, "rowspan": 1, "classes": "no-col", "photos": [], "isPhoto": false}, {"id": "t4_r1_c2", "text": "10. SF6表计压力在绿色范围内，且与上次相比无明显下降（首次验收需在指针指示值划线）", "col": 2, "colspan": 1, "rowspan": 1, "classes": "content-col", "photos": [], "isPhoto": false}, {"id": "t4_r1_c4", "text": "合格", "col": 4, "colspan": 1, "rowspan": 1, "classes": "result-col", "photos": [], "isPhoto": false}, {"id": "t4_r1_c5", "text": "", "col": 5, "colspan": 1, "rowspan": 1, "classes": "remark-col", "photos": [], "isPhoto": false}], [{"id": "t4_r2_c0", "text": "38", "col": 0, "colspan": 1, "rowspan": 1, "classes": "no-col", "photos": [], "isPhoto": false}, {"id": "t4_r2_c2", "text": "11. 微机保护装置无异常报警、跳闸信号，装置无死机，在线测量电压、电流正确", "col": 2, "colspan": 1, "rowspan": 1, "classes": "content-col", "photos": [], "isPhoto": false}, {"id": "t4_r2_c4", "text": "合格", "col": 4, "colspan": 1, "rowspan": 1, "classes": "result-col", "photos": [], "isPhoto": false}, {"id": "t4_r2_c5", "text": "", "col": 5, "colspan": 1, "rowspan": 1, "classes": "remark-col", "photos": [], "isPhoto": false}], [{"id": "t4_r3_c0", "text": "39", "col": 0, "colspan": 1, "rowspan": 1, "classes": "no-col", "photos": [], "isPhoto": false}, {"id": "t4_r3_c2", "text": "12. 柜体无异常声响", "col": 2, "colspan": 1, "rowspan": 1, "classes": "content-col", "photos": [], "isPhoto": false}, {"id": "t4_r3_c4", "text": "", "col": 4, "colspan": 1, "rowspan": 1, "classes": "result-col", "photos": [], "isPhoto": false}, {"id": "t4_r3_c5", "text": "", "col": 5, "colspan": 1, "rowspan": 1, "classes": "remark-col", "photos": [], "isPhoto": false}], [{"id": "t4_r4_c0", "text": "40", "col": 0, "colspan": 1, "rowspan": 1, "classes": "no-col", "photos": [], "isPhoto": false}, {"id": "t4_r4_c2", "text": "13. 温湿度控制器运行正常", "col": 2, "colspan": 1, "rowspan": 1, "classes": "content-col", "photos": [], "isPhoto": false}, {"id": "t4_r4_c4", "text": "合格", "col": 4, "colspan": 1, "rowspan": 1, "classes": "result-col", "photos": [], "isPhoto": false}, {"id": "t4_r4_c5", "text": "", "col": 5, "colspan": 1, "rowspan": 1, "classes": "remark-col", "photos": [], "isPhoto": false}], [{"id": "t4_r5_c0", "text": "41", "col": 0, "colspan": 1, "rowspan": 1, "classes": "no-col", "photos": [], "isPhoto": false}, {"id": "t4_r5_c2", "text": "14. 玻璃观察窗无凝露，窗内无放电打火现象", "col": 2, "colspan": 1, "rowspan": 1, "classes": "content-col", "photos": [], "isPhoto": false}, {"id": "t4_r5_c4", "text": "合格", "col": 4, "colspan": 1, "rowspan": 1, "classes": "result-col", "photos": [], "isPhoto": false}, {"id": "t4_r5_c5", "text": "", "col": 5, "colspan": 1, "rowspan": 1, "classes": "remark-col", "photos": [], "isPhoto": false}], [{"id": "t4_r6_c0", "text": "42", "col": 0, "colspan": 1, "rowspan": 1, "classes": "no-col", "photos": [], "isPhoto": false}, {"id": "t4_r6_c2", "text": "15. 进出线孔使用防火泥进行封堵，无缺失、塌落现象，进出线孔边缘无切割线缆现象", "col": 2, "colspan": 1, "rowspan": 1, "classes": "content-col", "photos": [], "isPhoto": false}, {"id": "t4_r6_c4", "text": "合格", "col": 4, "colspan": 1, "rowspan": 1, "classes": "result-col", "photos": [], "isPhoto": false}, {"id": "t4_r6_c5", "text": "", "col": 5, "colspan": 1, "rowspan": 1, "classes": "remark-col", "photos": [], "isPhoto": false}], [{"id": "t4_r7_c0", "text": "43", "col": 0, "colspan": 1, "rowspan": 1, "classes": "no-col", "photos": [], "isPhoto": false}, {"id": "t4_r7_c1", "text": "箱变低压室进线柜", "col": 1, "colspan": 1, "rowspan": 1, "classes": "cat-col", "photos": [], "isPhoto": false}, {"id": "t4_r7_c2", "text": "电压、电流指示正确框架断路器机械指示、电气指示合闸位置，且处于工作位", "col": 2, "colspan": 1, "rowspan": 1, "classes": "content-col", "photos": [], "isPhoto": false}, {"id": "t4_r7_c3", "text": "", "col": 3, "colspan": 1, "rowspan": 1, "classes": "photo-col", "photos": [], "isPhoto": true}, {"id": "t4_r7_c4", "text": "合格", "col": 4, "colspan": 1, "rowspan": 1, "classes": "result-col", "photos": [], "isPhoto": false}, {"id": "t4_r7_c5", "text": "", "col": 5, "colspan": 1, "rowspan": 1, "classes": "remark-col", "photos": [], "isPhoto": false}], [{"id": "t4_r8_c0", "text": "44", "col": 0, "colspan": 1, "rowspan": 1, "classes": "no-col", "photos": [], "isPhoto": false}, {"id": "t4_r8_c1", "text": "箱变低压室出线柜", "col": 1, "colspan": 1, "rowspan": 1, "classes": "cat-col", "photos": [], "isPhoto": false}, {"id": "t4_r8_c2", "text": "刀闸在合闸位置电流指示正常，无异常声响；\n铜排连接螺栓防松线无位移，无烧蚀痕迹\n塑壳断路器上口三相铜牌螺栓温度\n1回路温差:___℃，最高温度:___℃\n2回路:___℃，最高温度:___℃\n(温差不超过5k，最高50℃)", "col": 2, "colspan": 1, "rowspan": 1, "classes": "content-col", "photos": [], "isPhoto": false}, {"id": "t4_r8_c3", "text": "", "col": 3, "colspan": 1, "rowspan": 1, "classes": "photo-col", "photos": [], "isPhoto": true}, {"id": "t4_r8_c4", "text": "合格", "col": 4, "colspan": 1, "rowspan": 1, "classes": "result-col", "photos": [], "isPhoto": false}, {"id": "t4_r8_c5", "text": "", "col": 5, "colspan": 1, "rowspan": 1, "classes": "remark-col", "photos": [], "isPhoto": false}], [{"id": "t4_r9_c0", "text": "45", "col": 0, "colspan": 1, "rowspan": 1, "classes": "no-col", "photos": [], "isPhoto": false}, {"id": "t4_r9_c1", "text": "箱变低压室补偿柜", "col": 1, "colspan": 1, "rowspan": 1, "classes": "cat-col", "photos": [], "isPhoto": false}, {"id": "t4_r9_c2", "text": "自动控制器运行正常，自动模式下未充电且电压正常时无电容器投入投退指示灯与实际状态一致，刀闸在合闸位置", "col": 2, "colspan": 1, "rowspan": 1, "classes": "content-col", "photos": [], "isPhoto": false}, {"id": "t4_r9_c3", "text": "", "col": 3, "colspan": 1, "rowspan": 1, "classes": "photo-col", "photos": [], "isPhoto": true}, {"id": "t4_r9_c4", "text": "合格", "col": 4, "colspan": 1, "rowspan": 1, "classes": "result-col", "photos": [], "isPhoto": false}, {"id": "t4_r9_c5", "text": "", "col": 5, "colspan": 1, "rowspan": 1, "classes": "remark-col", "photos": [], "isPhoto": false}]]}, {"index": 5, "rows": [[{"id": "t5_r0_c0", "text": "46", "col": 0, "colspan": 1, "rowspan": 1, "classes": "no-col", "photos": [], "isPhoto": false}, {"id": "t5_r0_c1", "text": "箱变低压室内环境", "col": 1, "colspan": 1, "rowspan": 1, "classes": "cat-col", "photos": [], "isPhoto": false}, {"id": "t5_r0_c2", "text": "低压室内照明完好、无小动物粪便、尸体等活动痕迹、无杂物、无凝露", "col": 2, "colspan": 1, "rowspan": 1, "classes": "content-col", "photos": [], "isPhoto": false}, {"id": "t5_r0_c3", "text": "", "col": 3, "colspan": 1, "rowspan": 1, "classes": "photo-col", "photos": [], "isPhoto": true}, {"id": "t5_r0_c4", "text": "合格", "col": 4, "colspan": 1, "rowspan": 1, "classes": "result-col", "photos": [], "isPhoto": false}, {"id": "t5_r0_c5", "text": "", "col": 5, "colspan": 1, "rowspan": 1, "classes": "remark-col", "photos": [], "isPhoto": false}], [{"id": "t5_r1_c0", "text": "47", "col": 0, "colspan": 1, "rowspan": 1, "classes": "no-col", "photos": [], "isPhoto": false}, {"id": "t5_r1_c1", "text": "箱变计量柜", "col": 1, "colspan": 1, "rowspan": 1, "classes": "cat-col", "photos": [], "isPhoto": false}, {"id": "t5_r1_c2", "text": "柜门关闭严实，预留备用线无电缆头导体铜丝裸露情况；无异常声响", "col": 2, "colspan": 1, "rowspan": 1, "classes": "content-col", "photos": [], "isPhoto": false}, {"id": "t5_r1_c3", "text": "", "col": 3, "colspan": 1, "rowspan": 1, "classes": "photo-col", "photos": [], "isPhoto": true}, {"id": "t5_r1_c4", "text": "合格", "col": 4, "colspan": 1, "rowspan": 1, "classes": "result-col", "photos": [], "isPhoto": false}, {"id": "t5_r1_c5", "text": "", "col": 5, "colspan": 1, "rowspan": 1, "classes": "remark-col", "photos": [], "isPhoto": false}], [{"id": "t5_r2_c0", "text": "48", "col": 0, "colspan": 1, "rowspan": 1, "classes": "no-col", "photos": [], "isPhoto": false}, {"id": "t5_r2_c1", "text": "箱变高室内环境", "col": 1, "colspan": 1, "rowspan": 1, "classes": "cat-col", "photos": [], "isPhoto": false}, {"id": "t5_r2_c2", "text": "高压室内照明完好、无小动物粪便、尸体等活动痕迹、无杂物", "col": 2, "colspan": 1, "rowspan": 1, "classes": "content-col", "photos": [], "isPhoto": false}, {"id": "t5_r2_c3", "text": "", "col": 3, "colspan": 1, "rowspan": 1, "classes": "photo-col", "photos": [], "isPhoto": true}, {"id": "t5_r2_c4", "text": "合格", "col": 4, "colspan": 1, "rowspan": 1, "classes": "result-col", "photos": [], "isPhoto": false}, {"id": "t5_r2_c5", "text": "", "col": 5, "colspan": 1, "rowspan": 1, "classes": "remark-col", "photos": [], "isPhoto": false}], [{"id": "t5_r3_c0", "text": "49", "col": 0, "colspan": 1, "rowspan": 1, "classes": "no-col", "photos": [], "isPhoto": false}, {"id": "t5_r3_c1", "text": "柱上配电设备", "col": 1, "colspan": 1, "rowspan": 6, "classes": "cat-col", "photos": [], "isPhoto": false}, {"id": "t5_r3_c2", "text": "1. 断路器在合闸位置、已储能，本体无悬挂异物、无异常声响、外绝缘无破损,两端接线无散股、断股", "col": 2, "colspan": 1, "rowspan": 1, "classes": "content-col", "photos": [], "isPhoto": false}, {"id": "t5_r3_c3", "text": "", "col": 3, "colspan": 1, "rowspan": 6, "classes": "photo-col", "photos": [], "isPhoto": true}, {"id": "t5_r3_c4", "text": "", "col": 4, "colspan": 1, "rowspan": 1, "classes": "result-col", "photos": [], "isPhoto": false}, {"id": "t5_r3_c5", "text": "", "col": 5, "colspan": 1, "rowspan": 1, "classes": "remark-col", "photos": [], "isPhoto": false}], [{"id": "t5_r4_c0", "text": "50", "col": 0, "colspan": 1, "rowspan": 1, "classes": "no-col", "photos": [], "isPhoto": false}, {"id": "t5_r4_c2", "text": "2. 避雷器、电压互感器、电流互感器瓷瓶无破损、缺失，无异常声音", "col": 2, "colspan": 1, "rowspan": 1, "classes": "content-col", "photos": [], "isPhoto": false}, {"id": "t5_r4_c4", "text": "合格", "col": 4, "colspan": 1, "rowspan": 1, "classes": "result-col", "photos": [], "isPhoto": false}, {"id": "t5_r4_c5", "text": "", "col": 5, "colspan": 1, "rowspan": 1, "classes": "remark-col", "photos": [], "isPhoto": false}], [{"id": "t5_r5_c0", "text": "51", "col": 0, "colspan": 1, "rowspan": 1, "classes": "no-col", "photos": [], "isPhoto": false}, {"id": "t5_r5_c2", "text": "3. 隔离开关无异常声响，三相在同一平行线上", "col": 2, "colspan": 1, "rowspan": 1, "classes": "content-col", "photos": [], "isPhoto": false}, {"id": "t5_r5_c4", "text": "合格", "col": 4, "colspan": 1, "rowspan": 1, "classes": "result-col", "photos": [], "isPhoto": false}, {"id": "t5_r5_c5", "text": "", "col": 5, "colspan": 1, "rowspan": 1, "classes": "remark-col", "photos": [], "isPhoto": false}], [{"id": "t5_r6_c0", "text": "52", "col": 0, "colspan": 1, "rowspan": 1, "classes": "no-col", "photos": [], "isPhoto": false}, {"id": "t5_r6_c2", "text": "4. 跌落保险无发黑、掉落情况", "col": 2, "colspan": 1, "rowspan": 1, "classes": "content-col", "photos": [], "isPhoto": false}, {"id": "t5_r6_c4", "text": "合格", "col": 4, "colspan": 1, "rowspan": 1, "classes": "result-col", "photos": [], "isPhoto": false}, {"id": "t5_r6_c5", "text": "", "col": 5, "colspan": 1, "rowspan": 1, "classes": "remark-col", "photos": [], "isPhoto": false}], [{"id": "t5_r7_c0", "text": "53", "col": 0, "colspan": 1, "rowspan": 1, "classes": "no-col", "photos": [], "isPhoto": false}, {"id": "t5_r7_c2", "text": "5. 计量箱外观完好，无异常声响、无悬挂异物", "col": 2, "colspan": 1, "rowspan": 1, "classes": "content-col", "photos": [], "isPhoto": false}, {"id": "t5_r7_c4", "text": "合格", "col": 4, "colspan": 1, "rowspan": 1, "classes": "result-col", "photos": [], "isPhoto": false}, {"id": "t5_r7_c5", "text": "", "col": 5, "colspan": 1, "rowspan": 1, "classes": "remark-col", "photos": [], "isPhoto": false}], [{"id": "t5_r8_c0", "text": "54", "col": 0, "colspan": 1, "rowspan": 1, "classes": "no-col", "photos": [], "isPhoto": false}, {"id": "t5_r8_c2", "text": "6. 引下线外观完好、无悬挂异物", "col": 2, "colspan": 1, "rowspan": 1, "classes": "content-col", "photos": [], "isPhoto": false}, {"id": "t5_r8_c4", "text": "合格", "col": 4, "colspan": 1, "rowspan": 1, "classes": "result-col", "photos": [], "isPhoto": false}, {"id": "t5_r8_c5", "text": "", "col": 5, "colspan": 1, "rowspan": 1, "classes": "remark-col", "photos": [], "isPhoto": false}], [{"id": "t5_r9_c0", "text": "55", "col": 0, "colspan": 1, "rowspan": 1, "classes": "no-col", "photos": [], "isPhoto": false}, {"id": "t5_r9_c1", "text": "高压智能终端", "col": 1, "colspan": 1, "rowspan": 3, "classes": "cat-col", "photos": [], "isPhoto": false}, {"id": "t5_r9_c2", "text": "1. 无异常跳闸、闭锁信号；", "col": 2, "colspan": 1, "rowspan": 1, "classes": "content-col", "photos": [], "isPhoto": false}, {"id": "t5_r9_c3", "text": "", "col": 3, "colspan": 1, "rowspan": 3, "classes": "photo-col", "photos": [], "isPhoto": true}, {"id": "t5_r9_c4", "text": "合格", "col": 4, "colspan": 1, "rowspan": 1, "classes": "result-col", "photos": [], "isPhoto": false}, {"id": "t5_r9_c5", "text": "", "col": 5, "colspan": 1, "rowspan": 1, "classes": "remark-col", "photos": [], "isPhoto": false}], [{"id": "t5_r10_c0", "text": "56", "col": 0, "colspan": 1, "rowspan": 1, "classes": "no-col", "photos": [], "isPhoto": false}, {"id": "t5_r10_c2", "text": "2. 位置显示与实际运行状态相符；", "col": 2, "colspan": 1, "rowspan": 1, "classes": "content-col", "photos": [], "isPhoto": false}, {"id": "t5_r10_c4", "text": "合格", "col": 4, "colspan": 1, "rowspan": 1, "classes": "result-col", "photos": [], "isPhoto": false}, {"id": "t5_r10_c5", "text": "", "col": 5, "colspan": 1, "rowspan": 1, "classes": "remark-col", "photos": [], "isPhoto": false}], [{"id": "t5_r11_c0", "text": "57", "col": 0, "colspan": 1, "rowspan": 1, "classes": "no-col", "photos": [], "isPhoto": false}, {"id": "t5_r11_c2", "text": "3. 通信线无松动脱落", "col": 2, "colspan": 1, "rowspan": 1, "classes": "content-col", "photos": [], "isPhoto": false}, {"id": "t5_r11_c4", "text": "合格", "col": 4, "colspan": 1, "rowspan": 1, "classes": "result-col", "photos": [], "isPhoto": false}, {"id": "t5_r11_c5", "text": "", "col": 5, "colspan": 1, "rowspan": 1, "classes": "remark-col", "photos": [], "isPhoto": false}], [{"id": "t5_r12_c0", "text": "58", "col": 0, "colspan": 1, "rowspan": 1, "classes": "no-col", "photos": [], "isPhoto": false}, {"id": "t5_r12_c1", "text": "水泥杆", "col": 1, "colspan": 1, "rowspan": 3, "classes": "cat-col", "photos": [], "isPhoto": false}, {"id": "t5_r12_c2", "text": "1. 无明显倾斜，倾斜不超过15°", "col": 2, "colspan": 1, "rowspan": 1, "classes": "content-col", "photos": [], "isPhoto": false}, {"id": "t5_r12_c3", "text": "", "col": 3, "colspan": 1, "rowspan": 3, "classes": "photo-col", "photos": [], "isPhoto": true}, {"id": "t5_r12_c4", "text": "合格", "col": 4, "colspan": 1, "rowspan": 1, "classes": "result-col", "photos": [], "isPhoto": false}, {"id": "t5_r12_c5", "text": "", "col": 5, "colspan": 1, "rowspan": 1, "classes": "remark-col", "photos": [], "isPhoto": false}], [{"id": "t5_r13_c0", "text": "59", "col": 0, "colspan": 1, "rowspan": 1, "classes": "no-col", "photos": [], "isPhoto": false}, {"id": "t5_r13_c2", "text": "2. 接地连接完好", "col": 2, "colspan": 1, "rowspan": 1, "classes": "content-col", "photos": [], "isPhoto": false}, {"id": "t5_r13_c4", "text": "合格", "col": 4, "colspan": 1, "rowspan": 1, "classes": "result-col", "photos": [], "isPhoto": false}, {"id": "t5_r13_c5", "text": "", "col": 5, "colspan": 1, "rowspan": 1, "classes": "remark-col", "photos": [], "isPhoto": false}], [{"id": "t5_r14_c0", "text": "60", "col": 0, "colspan": 1, "rowspan": 1, "classes": "no-col", "photos": [], "isPhoto": false}, {"id": "t5_r14_c2", "text": "3. 水泥杆无裂纹", "col": 2, "colspan": 1, "rowspan": 1, "classes": "content-col", "photos": [], "isPhoto": false}, {"id": "t5_r14_c4", "text": "合格", "col": 4, "colspan": 1, "rowspan": 1, "classes": "result-col", "photos": [], "isPhoto": false}, {"id": "t5_r14_c5", "text": "", "col": 5, "colspan": 1, "rowspan": 1, "classes": "remark-col", "photos": [], "isPhoto": false}], [{"id": "t5_r15_c0", "text": "61", "col": 0, "colspan": 1, "rowspan": 1, "classes": "no-col", "photos": [], "isPhoto": false}, {"id": "t5_r15_c1", "text": "配电箱整体外观", "col": 1, "colspan": 1, "rowspan": 3, "classes": "cat-col", "photos": [], "isPhoto": false}, {"id": "t5_r15_c2", "text": "外观：配电箱安装牢固，无晃动、歪斜。", "col": 2, "colspan": 1, "rowspan": 1, "classes": "content-col", "photos": [], "isPhoto": false}, {"id": "t5_r15_c3", "text": "", "col": 3, "colspan": 1, "rowspan": 1, "classes": "photo-col", "photos": [], "isPhoto": true}, {"id": "t5_r15_c4", "text": "合格", "col": 4, "colspan": 1, "rowspan": 1, "classes": "result-col", "photos": [], "isPhoto": false}, {"id": "t5_r15_c5", "text": "", "col": 5, "colspan": 1, "rowspan": 1, "classes": "remark-col", "photos": [], "isPhoto": false}], [{"id": "t5_r16_c0", "text": "62", "col": 0, "colspan": 1, "rowspan": 1, "classes": "no-col", "photos": [], "isPhoto": false}, {"id": "t5_r16_c2", "text": "柜门：柜门锁具完好，无锈蚀损坏，可正常上锁", "col": 2, "colspan": 1, "rowspan": 1, "classes": "content-col", "photos": [], "isPhoto": false}, {"id": "t5_r16_c3", "text": "", "col": 3, "colspan": 1, "rowspan": 1, "classes": "photo-col", "photos": [], "isPhoto": true}, {"id": "t5_r16_c4", "text": "合格", "col": 4, "colspan": 1, "rowspan": 1, "classes": "result-col", "photos": [], "isPhoto": false}, {"id": "t5_r16_c5", "text": "", "col": 5, "colspan": 1, "rowspan": 1, "classes": "remark-col", "photos": [], "isPhoto": false}], [{"id": "t5_r17_c0", "text": "63", "col": 0, "colspan": 1, "rowspan": 1, "classes": "no-col", "photos": [], "isPhoto": false}, {"id": "t5_r17_c2", "text": "安全标识：安全标识齐全，无缺失", "col": 2, "colspan": 1, "rowspan": 1, "classes": "content-col", "photos": [], "isPhoto": false}, {"id": "t5_r17_c3", "text": "", "col": 3, "colspan": 1, "rowspan": 1, "classes": "photo-col", "photos": [], "isPhoto": true}, {"id": "t5_r17_c4", "text": "合格", "col": 4, "colspan": 1, "rowspan": 1, "classes": "result-col", "photos": [], "isPhoto": false}, {"id": "t5_r17_c5", "text": "", "col": 5, "colspan": 1, "rowspan": 1, "classes": "remark-col", "photos": [], "isPhoto": false}], [{"id": "t5_r18_c0", "text": "64", "col": 0, "colspan": 1, "rowspan": 1, "classes": "no-col", "photos": [], "isPhoto": false}, {"id": "t5_r18_c1", "text": "配电箱接线", "col": 1, "colspan": 1, "rowspan": 3, "classes": "cat-col", "photos": [], "isPhoto": false}, {"id": "t5_r18_c2", "text": "配电箱内部：配电箱柜体内部无锈蚀、无积土/积沙、无发霉、无水渍或其他漏水痕迹。", "col": 2, "colspan": 1, "rowspan": 1, "classes": "content-col", "photos": [], "isPhoto": false}, {"id": "t5_r18_c3", "text": "", "col": 3, "colspan": 1, "rowspan": 1, "classes": "photo-col", "photos": [], "isPhoto": true}, {"id": "t5_r18_c4", "text": "合格", "col": 4, "colspan": 1, "rowspan": 1, "classes": "result-col", "photos": [], "isPhoto": false}, {"id": "t5_r18_c5", "text": "", "col": 5, "colspan": 1, "rowspan": 1, "classes": "remark-col", "photos": [], "isPhoto": false}], [{"id": "t5_r19_c0", "text": "65", "col": 0, "colspan": 1, "rowspan": 1, "classes": "no-col", "photos": [], "isPhoto": false}, {"id": "t5_r19_c2", "text": "接地：接地位置有明显的接地标识，无缺失；接地线可靠接地，无松动；接地排防锈蚀涂装无破损缺失", "col": 2, "colspan": 1, "rowspan": 1, "classes": "content-col", "photos": [], "isPhoto": false}, {"id": "t5_r19_c3", "text": "", "col": 3, "colspan": 1, "rowspan": 1, "classes": "photo-col", "photos": [], "isPhoto": true}, {"id": "t5_r19_c4", "text": "合格", "col": 4, "colspan": 1, "rowspan": 1, "classes": "result-col", "photos": [], "isPhoto": false}, {"id": "t5_r19_c5", "text": "", "col": 5, "colspan": 1, "rowspan": 1, "classes": "remark-col", "photos": [], "isPhoto": false}], [{"id": "t5_r20_c0", "text": "66", "col": 0, "colspan": 1, "rowspan": 1, "classes": "no-col", "photos": [], "isPhoto": false}, {"id": "t5_r20_c2", "text": "接线：配电箱内部各接线位置无烧灼、放电现象，接线无松动，防松线位置无变化，标识牌无缺失褪色；\n塑壳断路器上口三相铜牌螺栓温度\n1回路温差:___℃，最高温度:___℃\n2回路:___℃，最高温度:___℃\n(温差不超过5k，最高50℃)", "col": 2, "colspan": 1, "rowspan": 1, "classes": "content-col", "photos": [], "isPhoto": false}, {"id": "t5_r20_c3", "text": "", "col": 3, "colspan": 1, "rowspan": 1, "classes": "photo-col", "photos": [], "isPhoto": true}, {"id": "t5_r20_c4", "text": "合格", "col": 4, "colspan": 1, "rowspan": 1, "classes": "result-col", "photos": [], "isPhoto": false}, {"id": "t5_r20_c5", "text": "", "col": 5, "colspan": 1, "rowspan": 1, "classes": "remark-col", "photos": [], "isPhoto": false}]]}, {"index": 6, "rows": [[{"id": "t6_r0_c0", "text": "67", "col": 0, "colspan": 1, "rowspan": 1, "classes": "no-col", "photos": [], "isPhoto": false}, {"id": "t6_r0_c1", "text": "配电箱接线", "col": 1, "colspan": 1, "rowspan": 3, "classes": "cat-col", "photos": [], "isPhoto": false}, {"id": "t6_r0_c2", "text": "电表：电表计量功能正常，可正确采集电压、电流，表计无告警信息，三相计量值基本一致，无异常偏差", "col": 2, "colspan": 1, "rowspan": 1, "classes": "content-col", "photos": [], "isPhoto": false}, {"id": "t6_r0_c3", "text": "", "col": 3, "colspan": 1, "rowspan": 1, "classes": "photo-col", "photos": [], "isPhoto": true}, {"id": "t6_r0_c4", "text": "合格", "col": 4, "colspan": 1, "rowspan": 1, "classes": "result-col", "photos": [], "isPhoto": false}, {"id": "t6_r0_c5", "text": "", "col": 5, "colspan": 1, "rowspan": 1, "classes": "remark-col", "photos": [], "isPhoto": false}], [{"id": "t6_r1_c0", "text": "68", "col": 0, "colspan": 1, "rowspan": 1, "classes": "no-col", "photos": [], "isPhoto": false}, {"id": "t6_r1_c2", "text": "进出线孔：进出线孔使用防火泥进行封堵，无缺失、脱落、发霉现象；进出线孔边缘无切割线缆现象", "col": 2, "colspan": 1, "rowspan": 1, "classes": "content-col", "photos": [], "isPhoto": false}, {"id": "t6_r1_c3", "text": "", "col": 3, "colspan": 1, "rowspan": 1, "classes": "photo-col", "photos": [], "isPhoto": true}, {"id": "t6_r1_c4", "text": "合格", "col": 4, "colspan": 1, "rowspan": 1, "classes": "result-col", "photos": [], "isPhoto": false}, {"id": "t6_r1_c5", "text": "", "col": 5, "colspan": 1, "rowspan": 1, "classes": "remark-col", "photos": [], "isPhoto": false}], [{"id": "t6_r2_c0", "text": "69", "col": 0, "colspan": 1, "rowspan": 1, "classes": "no-col", "photos": [], "isPhoto": false}, {"id": "t6_r2_c2", "text": "电气图纸：\n电气图纸无缺失、褪色现场", "col": 2, "colspan": 1, "rowspan": 1, "classes": "content-col", "photos": [], "isPhoto": false}, {"id": "t6_r2_c3", "text": "合格", "col": 3, "colspan": 1, "rowspan": 1, "classes": "photo-col", "photos": [], "isPhoto": true}, {"id": "t6_r2_c4", "text": "合格", "col": 4, "colspan": 1, "rowspan": 1, "classes": "result-col", "photos": [], "isPhoto": false}, {"id": "t6_r2_c5_auto_remark", "text": "", "col": 5, "colspan": 1, "rowspan": 1, "classes": "remark-col", "photos": [], "isPhoto": false}], [{"id": "t6_r3_c0", "text": "70", "col": 0, "colspan": 1, "rowspan": 1, "classes": "no-col", "photos": [], "isPhoto": false}, {"id": "t6_r3_c1", "text": "主机外观检查", "col": 1, "colspan": 1, "rowspan": 2, "classes": "cat-col", "photos": [], "isPhoto": false}, {"id": "t6_r3_c2", "text": "外观：主机安装牢固，无晃动、歪斜，基础完好无破损；", "col": 2, "colspan": 1, "rowspan": 1, "classes": "content-col", "photos": [], "isPhoto": false}, {"id": "t6_r3_c3", "text": "", "col": 3, "colspan": 1, "rowspan": 1, "classes": "photo-col", "photos": [], "isPhoto": true}, {"id": "t6_r3_c4", "text": "合格", "col": 4, "colspan": 1, "rowspan": 1, "classes": "result-col", "photos": [], "isPhoto": false}, {"id": "t6_r3_c5", "text": "", "col": 5, "colspan": 1, "rowspan": 1, "classes": "remark-col", "photos": [], "isPhoto": false}], [{"id": "t6_r4_c0", "text": "71", "col": 0, "colspan": 1, "rowspan": 1, "classes": "no-col", "photos": [], "isPhoto": false}, {"id": "t6_r4_c2", "text": "锁具：柜门锁具完好，无锈蚀损坏，可正常上锁", "col": 2, "colspan": 1, "rowspan": 1, "classes": "content-col", "photos": [], "isPhoto": false}, {"id": "t6_r4_c3", "text": "", "col": 3, "colspan": 1, "rowspan": 1, "classes": "photo-col", "photos": [], "isPhoto": true}, {"id": "t6_r4_c4", "text": "合格", "col": 4, "colspan": 1, "rowspan": 1, "classes": "result-col", "photos": [], "isPhoto": false}, {"id": "t6_r4_c5", "text": "", "col": 5, "colspan": 1, "rowspan": 1, "classes": "remark-col", "photos": [], "isPhoto": false}], [{"id": "t6_r5_c0", "text": "72", "col": 0, "colspan": 1, "rowspan": 1, "classes": "no-col", "photos": [], "isPhoto": false}, {"id": "t6_r5_c1", "text": "主机接线检查", "col": 1, "colspan": 1, "rowspan": 2, "classes": "cat-col", "photos": [], "isPhoto": false}, {"id": "t6_r5_c2", "text": "接线：三相进线及直流出线接线位置无烧灼、放电现象，接线无松动，防松线位置无变化", "col": 2, "colspan": 1, "rowspan": 1, "classes": "content-col", "photos": [], "isPhoto": false}, {"id": "t6_r5_c3", "text": "", "col": 3, "colspan": 1, "rowspan": 1, "classes": "photo-col", "photos": [], "isPhoto": true}, {"id": "t6_r5_c4", "text": "合格", "col": 4, "colspan": 1, "rowspan": 1, "classes": "result-col", "photos": [], "isPhoto": false}, {"id": "t6_r5_c5", "text": "", "col": 5, "colspan": 1, "rowspan": 1, "classes": "remark-col", "photos": [], "isPhoto": false}], [{"id": "t6_r6_c0", "text": "73", "col": 0, "colspan": 1, "rowspan": 1, "classes": "no-col", "photos": [], "isPhoto": false}, {"id": "t6_r6_c2", "text": "接地：接地位置有明显的接地标识，无缺失。接地线可靠接地，无松动", "col": 2, "colspan": 1, "rowspan": 1, "classes": "content-col", "photos": [], "isPhoto": false}, {"id": "t6_r6_c3", "text": "", "col": 3, "colspan": 1, "rowspan": 1, "classes": "photo-col", "photos": [], "isPhoto": true}, {"id": "t6_r6_c4", "text": "合格", "col": 4, "colspan": 1, "rowspan": 1, "classes": "result-col", "photos": [], "isPhoto": false}, {"id": "t6_r6_c5", "text": "", "col": 5, "colspan": 1, "rowspan": 1, "classes": "remark-col", "photos": [], "isPhoto": false}]]}, {"index": 7, "rows": [[{"id": "t7_r0_c0", "text": "74", "col": 0, "colspan": 1, "rowspan": 1, "classes": "no-col", "photos": [], "isPhoto": false}, {"id": "t7_r0_c1", "text": "主机接线检查", "col": 1, "colspan": 1, "rowspan": 2, "classes": "cat-col", "photos": [], "isPhoto": false}, {"id": "t7_r0_c2", "text": "断路器：断路器上下接线口无烧灼、放电现象，接线无松动，防松线位置无变化。断路器分合闸操作正常", "col": 2, "colspan": 1, "rowspan": 1, "classes": "content-col", "photos": [], "isPhoto": false}, {"id": "t7_r0_c3", "text": "", "col": 3, "colspan": 1, "rowspan": 1, "classes": "photo-col", "photos": [], "isPhoto": true}, {"id": "t7_r0_c4", "text": "合格", "col": 4, "colspan": 1, "rowspan": 1, "classes": "result-col", "photos": [], "isPhoto": false}, {"id": "t7_r0_c5", "text": "", "col": 5, "colspan": 1, "rowspan": 1, "classes": "remark-col", "photos": [], "isPhoto": false}], [{"id": "t7_r1_c0", "text": "75", "col": 0, "colspan": 1, "rowspan": 1, "classes": "no-col", "photos": [], "isPhoto": false}, {"id": "t7_r1_c2", "text": "进出线孔：进出线孔使用防火泥进行封堵，无缺失、脱落现象；进出线孔边缘无切割线缆现象", "col": 2, "colspan": 1, "rowspan": 1, "classes": "content-col", "photos": [], "isPhoto": false}, {"id": "t7_r1_c3", "text": "", "col": 3, "colspan": 1, "rowspan": 1, "classes": "photo-col", "photos": [], "isPhoto": true}, {"id": "t7_r1_c4", "text": "合格", "col": 4, "colspan": 1, "rowspan": 1, "classes": "result-col", "photos": [], "isPhoto": false}, {"id": "t7_r1_c5", "text": "", "col": 5, "colspan": 1, "rowspan": 1, "classes": "remark-col", "photos": [], "isPhoto": false}], [{"id": "t7_r2_c0", "text": "76", "col": 0, "colspan": 1, "rowspan": 1, "classes": "no-col", "photos": [], "isPhoto": false}, {"id": "t7_r2_c1", "text": "终端检查", "col": 1, "colspan": 1, "rowspan": 1, "classes": "cat-col", "photos": [], "isPhoto": false}, {"id": "t7_r2_c2", "text": "外观：终端安装牢固，无晃动、歪斜,基础完好无破损。", "col": 2, "colspan": 1, "rowspan": 1, "classes": "content-col", "photos": [], "isPhoto": false}, {"id": "t7_r2_c3", "text": "", "col": 3, "colspan": 1, "rowspan": 1, "classes": "photo-col", "photos": [], "isPhoto": true}, {"id": "t7_r2_c4", "text": "合格", "col": 4, "colspan": 1, "rowspan": 1, "classes": "result-col", "photos": [], "isPhoto": false}, {"id": "t7_r2_c5", "text": "", "col": 5, "colspan": 1, "rowspan": 1, "classes": "remark-col", "photos": [], "isPhoto": false}], [{"id": "t7_r3_c0", "text": "77", "col": 0, "colspan": 1, "rowspan": 1, "classes": "no-col", "photos": [], "isPhoto": false}, {"id": "t7_r3_c1", "text": "电缆相关检查项", "col": 1, "colspan": 1, "rowspan": 3, "classes": "cat-col", "photos": [], "isPhoto": false}, {"id": "t7_r3_c2", "text": "电缆井：\n1.井体无明显沉降（1cm），井盖无破损断裂密封严实\n2.电缆管口封堵正常无脱落", "col": 2, "colspan": 1, "rowspan": 1, "classes": "content-col", "photos": [], "isPhoto": false}, {"id": "t7_r3_c3", "text": "", "col": 3, "colspan": 1, "rowspan": 1, "classes": "photo-col", "photos": [], "isPhoto": true}, {"id": "t7_r3_c4", "text": "", "col": 4, "colspan": 1, "rowspan": 1, "classes": "result-col", "photos": [], "isPhoto": false}, {"id": "t7_r3_c5_auto_remark", "text": "", "col": 5, "colspan": 1, "rowspan": 1, "classes": "remark-col", "photos": [], "isPhoto": false}], [{"id": "t7_r4_c0", "text": "78", "col": 0, "colspan": 1, "rowspan": 1, "classes": "no-col", "photos": [], "isPhoto": false}, {"id": "t7_r4_c2", "text": "电缆沟：\n1.绿地直埋电缆沟无明显沉降（5cm）\n2.混凝土/沥青等硬化地面直埋电缆沟无明显沉降（1cm）\n3.砖砌电缆沟沟体无明显沉降（1cm）,盖板无破损断裂等", "col": 2, "colspan": 1, "rowspan": 1, "classes": "content-col", "photos": [], "isPhoto": false}, {"id": "t7_r4_c3", "text": "", "col": 3, "colspan": 1, "rowspan": 1, "classes": "photo-col", "photos": [], "isPhoto": true}, {"id": "t7_r4_c4", "text": "合格", "col": 4, "colspan": 1, "rowspan": 1, "classes": "result-col", "photos": [], "isPhoto": false}, {"id": "t7_r4_c5_auto_remark", "text": "", "col": 5, "colspan": 1, "rowspan": 1, "classes": "remark-col", "photos": [], "isPhoto": false}], [{"id": "t7_r5_c0", "text": "79", "col": 0, "colspan": 1, "rowspan": 1, "classes": "no-col", "photos": [], "isPhoto": false}, {"id": "t7_r5_c2", "text": "电缆桥架：\n1.桥架固定牢固，焊缝无断裂\n2.镀层/油漆均匀完好无明显脱落\n3.接地完好无明显腐蚀痕迹，与桥架连接牢固", "col": 2, "colspan": 1, "rowspan": 1, "classes": "content-col", "photos": [], "isPhoto": false}, {"id": "t7_r5_c3", "text": "", "col": 3, "colspan": 1, "rowspan": 1, "classes": "photo-col", "photos": [], "isPhoto": true}, {"id": "t7_r5_c4", "text": "合格", "col": 4, "colspan": 1, "rowspan": 1, "classes": "result-col", "photos": [], "isPhoto": false}, {"id": "t7_r5_c5_auto_remark", "text": "", "col": 5, "colspan": 1, "rowspan": 1, "classes": "remark-col", "photos": [], "isPhoto": false}]]}, {"index": 8, "rows": [[{"id": "t8_r0_c0", "text": "80", "col": 0, "colspan": 1, "rowspan": 1, "classes": "no-col", "photos": [], "isPhoto": false}, {"id": "t8_r0_c1", "text": "电缆相关检查项", "col": 1, "colspan": 1, "rowspan": 1, "classes": "cat-col", "photos": [], "isPhoto": false}, {"id": "t8_r0_c2", "text": "电缆保护管：\n1.外观完好，固定牢固\n2.接头连接紧固，整体管线无明显破损", "col": 2, "colspan": 1, "rowspan": 1, "classes": "content-col", "photos": [], "isPhoto": false}, {"id": "t8_r0_c3", "text": "", "col": 3, "colspan": 1, "rowspan": 1, "classes": "photo-col", "photos": [], "isPhoto": true}, {"id": "t8_r0_c4", "text": "合格", "col": 4, "colspan": 1, "rowspan": 1, "classes": "result-col", "photos": [], "isPhoto": false}, {"id": "t8_r0_c5_auto_remark", "text": "", "col": 5, "colspan": 1, "rowspan": 1, "classes": "remark-col", "photos": [], "isPhoto": false}], [{"id": "t8_r1_c0", "text": "验收结论", "col": 0, "colspan": 2, "rowspan": 1, "classes": "no-col", "photos": [], "isPhoto": false}, {"id": "t8_r1_c2", "text": "合格", "col": 2, "colspan": 4, "rowspan": 1, "classes": "content-col", "photos": [], "isPhoto": false}]]}];
+
+function setStatus(msg, show=true){
+  const el=document.getElementById("status");
+  if(!el)return;
+  el.innerHTML=msg||"";
+  el.classList.toggle("show",!!show);
+}
+function val(id){return document.getElementById(id)?.value||""}
+function esc(s){return String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#039;"}[m]))}
+function nl2br(s){return esc(s).replace(/\n/g,"<br>")}
+function sanitizeFileName(name){return String(name||"质保验收报告").replace(/[\\/:*?"<>|]/g,"_").replace(/\s+/g," ").trim()||"质保验收报告"}
+function getExportBaseName(){return sanitizeFileName(val("stationName")||val("reportTitle")||"质保验收报告")}
+
+function syncHeader(){
+  if(!tables[0]) return;
+  tables[0].rows[0]=[{id:"title",text:val("reportTitle"),col:0,colspan:6,rowspan:1,classes:"title-cell",photos:[],isPhoto:false}];
+  tables[0].rows[1]=[{id:"station",text:"场站名称：  "+val("stationName"),col:0,colspan:6,rowspan:1,classes:"station-cell",photos:[],isPhoto:false}];
+  tables[0].rows[2]=[
+    {id:"inspectorCell",text:"验收人员：  "+val("inspector"),col:0,colspan:3,rowspan:1,classes:"meta-left-cell",photos:[],isPhoto:false},
+    {id:"dateCell",text:"验收日期：  "+val("acceptDate"),col:3,colspan:3,rowspan:1,classes:"meta-right-cell",photos:[],isPhoto:false}
+  ];
+}
+function cellClass(ti,ri,cell){
+  let cls=cell.classes||"";
+  if(ti===0&&ri===3) cls+=" header-cell";
+  if((cls.includes("remark-col")||cell.col===5)&&!(ti===0&&ri===3)) cls+=" remark-col";
+  return cls;
+}
+function isResultCell(ti,ri,cell){return (cell.classes||"").includes("result-col")&&!(ti===0&&ri===3)}
+function renderResult(cell){
+  const v=cell.text||"合格";
+  cell.text=v;
+  return '<select class="result-select" data-result-cell="'+cell.id+'">'+
+    '<option '+(v==="合格"?"selected":"")+'>合格</option>'+
+    '<option '+(v==="不合格"?"selected":"")+'>不合格</option>'+
+    '<option '+(v==="不涉及"?"selected":"")+'>不涉及</option>'+
+  '</select>';
+}
+function renderPhoto(cell){
+  const photos=cell.photos||[];
+  let html='<div class="photo-box" data-photo-cell="'+cell.id+'">';
+  if(photos.length) {
+    html+='<div class="photo-grid">';
+    photos.slice(0,8).forEach((p,i)=>{
+      html+='<div><img src="'+p.src+'"><div class="photo-tools"><button type="button" class="danger" data-del-photo="'+cell.id+'" data-index="'+i+'">删除</button></div></div>';
+    });
+    html+='</div>';
+    if(photos.length>8) html+='<div style="font-size:11px;color:#64748b">另有'+(photos.length-8)+'张照片</div>';
+  }
+  html+='<button type="button" class="add-photo" data-add-photo="'+cell.id+'">添加照片</button>';
+  html+='<input class="file-input" type="file" accept="image/*" multiple data-file-input="'+cell.id+'">';
+  html+='</div>';
+  return html;
+}
+function render(){
+  syncHeader();
+  const paper=document.getElementById("paper");
+  let out="";
+  for(let ti=0;ti<tables.length;ti++){
+    const tbl=tables[ti];
+    out+='<table class="template-table" data-table="'+ti+'"><tbody>';
+    for(let ri=0;ri<tbl.rows.length;ri++){
+      const row=tbl.rows[ri].slice().sort((a,b)=>(a.col||0)-(b.col||0));
+      out+="<tr>";
+      row.forEach(cell=>{
+        const attrs=(cell.colspan>1?' colspan="'+cell.colspan+'"':'')+(cell.rowspan>1?' rowspan="'+cell.rowspan+'"':'');
+        const cls=cellClass(ti,ri,cell);
+        const editable=(cell.isPhoto||isResultCell(ti,ri,cell)||(ti===0&&ri<=2))?'':' contenteditable="true"';
+        let content="";
+        if(cell.isPhoto) content=renderPhoto(cell);
+        else if(isResultCell(ti,ri,cell)) content=renderResult(cell);
+        else content=nl2br(cell.text);
+        out+='<td class="'+cls+'" data-cell="'+cell.id+'"'+attrs+editable+'>'+content+'</td>';
+      });
+      out+="</tr>";
+    }
+    out+="</tbody></table>";
+  }
+  paper.innerHTML=out;
+  setTimeout(fitMobile,80);
+}
+function fitMobile(){
+  const paper=document.getElementById("paper");
+  const box=document.getElementById("paperScaleBox");
+  if(!paper||!box)return;
+  if(window.innerWidth<=768){
+    const scale=Math.min(1,(box.clientWidth||window.innerWidth)/794);
+    paper.style.transform='scale('+scale+')';
+    paper.style.width='794px';
+    paper.style.minWidth='794px';
+    box.style.height=Math.ceil(paper.scrollHeight*scale+20)+'px';
+  }else{
+    paper.style.transform='';
+    paper.style.width='';
+    paper.style.minWidth='';
+    box.style.height='';
+  }
+}
+function findCell(id){
+  for(const tbl of tables) for(const row of tbl.rows) for(const cell of row) if(cell.id===id) return cell;
+  return null;
+}
+
+async function readImageFile(file){
+  // 文件大小控制版：上传时压缩到报告清晰可用尺寸，避免Word/PDF过大
+  const raw=await new Promise((resolve,reject)=>{const r=new FileReader();r.onload=e=>resolve(e.target.result);r.onerror=reject;r.readAsDataURL(file);});
+  return await compressDataUrl(raw,1280,0.78);
+}
+function loadImg(src){return new Promise((resolve,reject)=>{const img=new Image();img.onload=()=>resolve(img);img.onerror=reject;img.src=src;})}
+async function compressDataUrl(dataUrl,maxSide=1280,quality=0.78){
+  try{
+    const img=await loadImg(dataUrl);
+    const scale=Math.min(1,maxSide/Math.max(img.width,img.height));
+    const w=Math.max(1,Math.round(img.width*scale));
+    const h=Math.max(1,Math.round(img.height*scale));
+    const c=document.createElement("canvas");
+    c.width=w;c.height=h;
+    const ctx=c.getContext("2d",{alpha:false});
+    ctx.fillStyle="#fff";ctx.fillRect(0,0,w,h);ctx.drawImage(img,0,0,w,h);
+    return c.toDataURL("image/jpeg",quality);
+  }catch(e){return dataUrl}
+}
+
+document.getElementById("paper").addEventListener("input",e=>{
+  const td=e.target.closest("td[data-cell]");
+  if(!td||td.querySelector(".photo-box")||td.querySelector("select"))return;
+  const cell=findCell(td.dataset.cell);
+  if(cell) cell.text=td.innerText;
+});
+document.getElementById("paper").addEventListener("change",e=>{
+  const sel=e.target.closest("select[data-result-cell]");
+  if(sel){const cell=findCell(sel.dataset.resultCell);if(cell){cell.text=sel.value;render();}}
+  const input=e.target.closest("input[data-file-input]");
+  if(input){
+    const cell=findCell(input.dataset.fileInput);
+    if(!cell)return;
+    const files=[...input.files].filter(f=>f.type.startsWith("image/"));
+    (async()=>{
+      cell.photos=cell.photos||[];
+      for(let i=0;i<files.length;i++){setStatus("正在读取照片明细 "+(i+1)+"/"+files.length+"...");cell.photos.push({src:await readImageFile(files[i])});}
+      input.value="";
+      render();
+      setStatus("照片明细上传完成",true);
+      setTimeout(()=>setStatus("",false),1200);
+    })();
+  }
+});
+document.getElementById("paper").addEventListener("click",e=>{
+  const add=e.target.closest("[data-add-photo]");
+  if(add){const inp=document.querySelector('input[data-file-input="'+add.dataset.addPhoto+'"]');if(inp)inp.click();}
+  const del=e.target.closest("[data-del-photo]");
+  if(del){const cell=findCell(del.dataset.delPhoto);if(cell&&cell.photos){if(confirm("确定删除这张照片吗？")){cell.photos.splice(Number(del.dataset.index),1);render();}}}
+});
+
+["reportTitle","stationName","inspector","acceptDate"].forEach(id=>{
+  const el=document.getElementById(id);
+  el.addEventListener("input",render);
+  el.addEventListener("change",render);
+});
+
+function cloneForExport(){
+  render();
+  const source=document.getElementById("paper");
+  const root=document.createElement("div");
+  root.className="export-root";
+  const clone=source.cloneNode(true);
+  root.appendChild(clone);
+  document.body.appendChild(root);
+  clone.querySelectorAll("button,input[type=file]").forEach(el=>el.remove());
+  clone.querySelectorAll("select").forEach(sel=>{const span=document.createElement("span");span.className="export-result-text";span.textContent=sel.value||"合格";sel.replaceWith(span);});
+  clone.querySelectorAll("img").forEach(img=>{img.style.maxWidth="80px";img.style.maxHeight="90px";img.style.objectFit="contain";});
+  return root;
+}
+function cleanup(root){if(root&&root.parentNode)root.parentNode.removeChild(root)}
+
+function dataUrlInfo(dataUrl){
+  const m=String(dataUrl||"").match(/^data:(image\/(png|jpeg|jpg|webp));base64,(.*)$/i);
+  if(!m) return null;
+  let ext=(m[2]||"jpg").toLowerCase();
+  if(ext==="jpeg") ext="jpg";
+  return {mime:m[1], ext, base64:m[3]};
+}
+function photoPageBreak(){
+  return '<w:p><w:r><w:br w:type="page"/></w:r></w:p>';
+}
+function wordTextParagraph(text, size=24, bold=false){
+  const safe=String(text||"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&apos;"}[m]));
+  return '<w:p><w:pPr><w:jc w:val="center"/></w:pPr><w:r><w:rPr>'+(bold?'<w:b/>':'')+'<w:sz w:val="'+size+'"/></w:rPr><w:t>'+safe+'</w:t></w:r></w:p>';
+}
+function collectOriginalPhotos(){
+  const list=[];
+  for(let ti=0;ti<tables.length;ti++){
+    const tbl=tables[ti];
+    for(let ri=0;ri<tbl.rows.length;ri++){
+      const row=tbl.rows[ri];
+      let no="", category="", content="";
+      for(const c of row){
+        const cls=c.classes||"";
+        if(cls.includes("no-col")) no=c.text||"";
+        if(cls.includes("cat-col")) category=c.text||"";
+        if(cls.includes("content-col")) content=c.text||"";
+      }
+      for(const cell of row){
+        if(cell.isPhoto && cell.photos && cell.photos.length){
+          cell.photos.forEach((p,idx)=>list.push({no,category,content,index:idx+1,src:p.src}));
+        }
+      }
+    }
+  }
+  return list;
+}
+function imageNaturalSize(src){
+  return new Promise((resolve)=>{
+    const img=new Image();
+    img.onload=()=>resolve({w:img.naturalWidth||img.width||1200,h:img.naturalHeight||img.height||900});
+    img.onerror=()=>resolve({w:1200,h:900});
+    img.src=src;
+  });
+}
+function cloneForExportFinal(){
+  render();
+  const source=document.getElementById("paper");
+  const root=document.createElement("div");
+  root.className="export-root";
+  const clone=source.cloneNode(true);
+  root.appendChild(clone);
+  document.body.appendChild(root);
+  clone.querySelectorAll("button,input[type=file],.photo-tools,.add-photo").forEach(el=>el.remove());
+  clone.querySelectorAll("select").forEach(sel=>{
+    const span=document.createElement("span");
+    span.className="export-result-text";
+    span.textContent=sel.value||"合格";
+    sel.replaceWith(span);
+  });
+  clone.querySelectorAll("[contenteditable]").forEach(el=>el.removeAttribute("contenteditable"));
+
+  clone.querySelectorAll(".photo-box").forEach(box=>{
+    box.querySelectorAll("button,input[type=file],.photo-tools,.add-photo").forEach(el=>el.remove());
+    const grid=box.querySelector(".photo-grid");
+    if(grid){
+      grid.style.display="flex";
+      grid.style.flexDirection="column";
+      grid.style.gap="8px";
+      grid.style.alignItems="center";
+      grid.style.justifyContent="flex-start";
+      grid.style.width="100%";
+      grid.style.maxWidth="100%";
+      grid.style.overflow="hidden";
+    }
+    box.querySelectorAll("img").forEach(img=>{
+      img.style.width="145px";
+      img.style.height="185px";
+      img.style.maxWidth="145px";
+      img.style.maxHeight="185px";
+      img.style.objectFit="contain";
+      img.style.display="block";
+      img.style.margin="0 auto";
+      img.style.border="1px solid #e5e7eb";
+      img.style.background="#fff";
+    });
+  });
+
+  });
+  return root;
+}
+
+async function canvasForTable(table,scale=1.05){
+  return await html2canvas(table,{backgroundColor:"#fff",scale:scale,useCORS:true,allowTaint:true,scrollX:0,scrollY:0,logging:false,windowWidth:900});
+}
+function imageParagraph(rId,widthPx,heightPx){
+  const cx=Math.round(widthPx*9525),cy=Math.round(heightPx*9525);
+  return '<w:p><w:pPr><w:jc w:val="center"/></w:pPr><w:r><w:drawing><wp:inline distT="0" distB="0" distL="0" distR="0"><wp:extent cx="'+cx+'" cy="'+cy+'"/><wp:effectExtent l="0" t="0" r="0" b="0"/><wp:docPr id="'+Math.floor(Math.random()*100000)+'" name="report"/><wp:cNvGraphicFramePr><a:graphicFrameLocks noChangeAspect="1"/></wp:cNvGraphicFramePr><a:graphic><a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/picture"><pic:pic><pic:nvPicPr><pic:cNvPr id="0" name="report.jpg"/><pic:cNvPicPr/></pic:nvPicPr><pic:blipFill><a:blip r:embed="'+rId+'"/><a:stretch><a:fillRect/></a:stretch></pic:blipFill><pic:spPr><a:xfrm><a:off x="0" y="0"/><a:ext cx="'+cx+'" cy="'+cy+'"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom></pic:spPr></pic:pic></a:graphicData></a:graphic></wp:inline></w:drawing></w:r></w:p>';
+}
+
+
+async function exportPDF(){
+  if(typeof html2canvas==="undefined" || !window.jspdf){
+    alert("PDF组件未加载成功，请刷新页面后重试。");
+    return;
+  }
+  setStatus("正在生成PDF文件，请稍等...");
+  const root=cloneForExportFinal();
+  try{
+    const {jsPDF}=window.jspdf;
+    const pdf=new jsPDF("p","mm","a4");
+    const pageW=210,pageH=297,margin=8,imgW=pageW-margin*2;
+    let first=true;
+    const tableEls=[...root.querySelectorAll("table")];
+    for(let i=0;i<tableEls.length;i++){
+      setStatus("正在生成PDF表格 "+(i+1)+"/"+tableEls.length+"...");
+      const canvas=await html2canvas(tableEls[i],{backgroundColor:"#fff",scale:1.65,useCORS:true,allowTaint:true,scrollX:0,scrollY:0,logging:false,windowWidth:900});
+      const imgH=imgW*canvas.height/canvas.width;
+      if(imgH <= pageH-margin*2){
+        if(!first)pdf.addPage(); first=false;
+        pdf.addImage(canvas.toDataURL("image/jpeg",0.86),"JPEG",margin,margin,imgW,imgH);
+      }else{
+        const sliceH=Math.floor(canvas.width*(pageH-margin*2)/imgW);
+        const partCanvas=document.createElement("canvas");
+        const ctx=partCanvas.getContext("2d");
+        partCanvas.width=canvas.width; partCanvas.height=sliceH;
+        let y=0;
+        while(y<canvas.height){
+          if(!first)pdf.addPage(); first=false;
+          ctx.fillStyle="#fff";ctx.fillRect(0,0,partCanvas.width,partCanvas.height);
+          const h=Math.min(sliceH,canvas.height-y);
+          ctx.drawImage(canvas,0,y,canvas.width,h,0,0,canvas.width,h);
+          pdf.addImage(partCanvas.toDataURL("image/jpeg",0.86),"JPEG",margin,margin,imgW,pageH-margin*2);
+          y+=sliceH;
+        }
+      }
+      canvas.width=1; canvas.height=1;
+    }
+
+    const originalPhotos=collectOriginalPhotos();
+    for(let pi=0;pi<originalPhotos.length;pi++){
+      const p=originalPhotos[pi];
+      setStatus("正在写入PDF照片 "+(pi+1)+"/"+originalPhotos.length+"...");
+      const size=await imageNaturalSize(p.src);
+      const maxW=pageW-margin*2;
+      const maxH=pageH-margin*2-28;
+      let w=Math.min(maxW,170);
+      let h=w*size.h/size.w;
+      if(h>maxH){h=maxH;w=h*size.w/size.h;}
+      pdf.addPage();
+      pdf.setFontSize(11);
+      pdf.text("照片明细 "+(pi+1)+"/"+originalPhotos.length+"  序号："+(p.no||"-")+"  类别："+(p.category||"-"), margin, margin+4);
+      const fmt=(p.src.indexOf("image/png")>=0)?"PNG":"JPEG";
+      pdf.addImage(p.src, fmt, (pageW-w)/2, margin+12, w, h);
+    }
+
+    pdf.save(getExportBaseName()+".pdf");
+    setStatus("PDF已生成",true);
+    setTimeout(()=>setStatus("",false),1800);
+  }catch(e){
+    console.error(e);
+    alert("PDF导出失败：照片可能太多或文件过大，请用电脑浏览器导出。");
+    setStatus("",false);
+  }finally{
+    cleanup(root);
+  }
+}
+
+async function exportWord(){
+  if(typeof JSZip==="undefined" || typeof html2canvas==="undefined"){
+    alert("Word组件未加载成功，请刷新页面后重试。");
+    return;
+  }
+  setStatus("正在生成真实DOCX，请稍等...");
+  const root=cloneForExportFinal();
+  try{
+    const zip=new JSZip();
+    const word=zip.folder("word");
+    const media=word.folder("media");
+    const rels=[];
+    let bodyXml="";
+    const tableEls=[...root.querySelectorAll("table")];
+    for(let i=0;i<tableEls.length;i++){
+      setStatus("正在生成Word表格 "+(i+1)+"/"+tableEls.length+"...");
+      const canvas=await html2canvas(tableEls[i],{backgroundColor:"#fff",scale:1.65,useCORS:true,allowTaint:true,scrollX:0,scrollY:0,logging:false,windowWidth:900});
+      const fileName="report_table_"+(i+1)+".jpg";
+      const rId="rIdTable"+(i+1);
+      media.file(fileName,canvas.toDataURL("image/jpeg",0.86).split(",")[1],{base64:true});
+      rels.push({rId,fileName});
+      const targetW=602,targetH=Math.round(targetW*canvas.height/canvas.width);
+      bodyXml+=imageParagraph(rId,targetW,targetH)+"<w:p/>";
+      canvas.width=1; canvas.height=1;
+    }
+
+    const originalPhotos=collectOriginalPhotos();
+    if(originalPhotos.length){
+      bodyXml+=photoPageBreak();
+      bodyXml+=wordTextParagraph("照片明细页",32,true);
+    }
+    for(let pi=0;pi<originalPhotos.length;pi++){
+      const p=originalPhotos[pi];
+      const info=dataUrlInfo(p.src);
+      if(!info) continue;
+      setStatus("正在写入Word照片 "+(pi+1)+"/"+originalPhotos.length+"...");
+      const size=await imageNaturalSize(p.src);
+      const fileName="original_"+(pi+1)+"."+info.ext;
+      const rId="rIdOriginal"+(pi+1);
+      media.file(fileName,info.base64,{base64:true});
+      rels.push({rId,fileName});
+      bodyXml+=photoPageBreak();
+      bodyXml+=wordTextParagraph("照片明细 "+(pi+1)+"/"+originalPhotos.length+"　序号："+(p.no||"-")+"　类别："+(p.category||"-"),22,true);
+      const targetW=520;
+      let targetH=Math.round(targetW*size.h/size.w);
+      if(targetH>720){targetH=720;}
+      bodyXml+=imageParagraph(rId,targetW,targetH);
+    }
+
+    const documentXml='<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture"><w:body>'+bodyXml+'<w:sectPr><w:pgSz w:w="11906" w:h="16838"/><w:pgMar w:top="720" w:right="720" w:bottom="720" w:left="720" w:header="360" w:footer="360" w:gutter="0"/></w:sectPr></w:body></w:document>';
+    const rootRels='<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rIdOfficeDoc" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/></Relationships>';
+    const docRels='<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'+rels.map(r=>'<Relationship Id="'+r.rId+'" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="media/'+r.fileName+'"/>').join("")+'</Relationships>';
+    const contentTypes='<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Default Extension="jpg" ContentType="image/jpeg"/><Default Extension="jpeg" ContentType="image/jpeg"/><Default Extension="png" ContentType="image/png"/><Default Extension="webp" ContentType="image/webp"/><Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/></Types>';
+    zip.file("[Content_Types].xml",contentTypes);
+    zip.folder("_rels").file(".rels",rootRels);
+    word.file("document.xml",documentXml);
+    word.folder("_rels").file("document.xml.rels",docRels);
+    const blob=await zip.generateAsync({type:"blob",compression:"DEFLATE",compressionOptions:{level:6}});
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement("a");
+    a.href=url;
+    a.download=getExportBaseName()+".docx";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    setStatus("可编辑Word已生成",true);
+    setTimeout(()=>setStatus("",false),1800);
+  }catch(e){
+    console.error(e);
+    alert("Word导出失败：照片可能太多或文件过大，请用电脑浏览器导出。");
+    setStatus("",false);
+  }finally{
+    cleanup(root);
+  }
+}
+
+
+/* ===== 可编辑Word导出：真实表格，不再整表截图 ===== */
+function xmlEscapeText(s){
+  return String(s||"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&apos;"}[m]));
+}
+function dataUrlInfoForDocx(dataUrl){
+  const m=String(dataUrl||"").match(/^data:(image\/(png|jpeg|jpg|webp));base64,(.*)$/i);
+  if(!m) return null;
+  let ext=(m[2]||"jpg").toLowerCase();
+  if(ext==="jpeg") ext="jpg";
+  return {mime:m[1], ext, base64:m[3]};
+}
+function pXml(text, bold=false, align="left", size=22){
+  const t=xmlEscapeText(text);
+  const jc=align?'<w:jc w:val="'+align+'"/>':'';
+  return '<w:p><w:pPr>'+jc+'</w:pPr><w:r><w:rPr>'+(bold?'<w:b/>':'')+'<w:sz w:val="'+size+'"/></w:rPr><w:t xml:space="preserve">'+t+'</w:t></w:r></w:p>';
+}
+function lineTextXml(text, bold=false, align="left", size=22){
+  const parts=String(text||"").split(/\n/);
+  return parts.map((x,i)=>pXml(x,bold,align,size)).join("");
+}
+function tcXml(inner, opts={}){
+  const gridSpan=opts.colspan&&opts.colspan>1?'<w:gridSpan w:val="'+opts.colspan+'"/>':'';
+  let vMerge='';
+  if(opts.vMerge==="restart") vMerge='<w:vMerge w:val="restart"/>';
+  if(opts.vMerge==="continue") vMerge='<w:vMerge/>';
+  const valign='<w:vAlign w:val="'+(opts.valign||"center")+'"/>';
+  const shade=opts.shade?'<w:shd w:fill="'+opts.shade+'"/>':'';
+  const width=opts.width?'<w:tcW w:w="'+opts.width+'" w:type="dxa"/>':'';
+  return '<w:tc><w:tcPr>'+width+gridSpan+vMerge+valign+shade+'</w:tcPr>'+inner+'</w:tc>';
+}
+function imgXml(rId, widthPx, heightPx){
+  const cx=Math.round(widthPx*9525), cy=Math.round(heightPx*9525);
+  return '<w:p><w:pPr><w:jc w:val="center"/></w:pPr><w:r><w:drawing><wp:inline distT="0" distB="0" distL="0" distR="0"><wp:extent cx="'+cx+'" cy="'+cy+'"/><wp:effectExtent l="0" t="0" r="0" b="0"/><wp:docPr id="'+Math.floor(Math.random()*999999)+'" name="photo"/><wp:cNvGraphicFramePr><a:graphicFrameLocks noChangeAspect="1"/></wp:cNvGraphicFramePr><a:graphic><a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/picture"><pic:pic><pic:nvPicPr><pic:cNvPr id="0" name="photo"/><pic:cNvPicPr/></pic:nvPicPr><pic:blipFill><a:blip r:embed="'+rId+'"/><a:stretch><a:fillRect/></a:stretch></pic:blipFill><pic:spPr><a:xfrm><a:off x="0" y="0"/><a:ext cx="'+cx+'" cy="'+cy+'"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom></pic:spPr></pic:pic></a:graphicData></a:graphic></wp:inline></w:drawing></w:r></w:p>';
+}
+function pageBreakXml(){
+  return '<w:p><w:r><w:br w:type="page"/></w:r></w:p>';
+}
+function getCellTextForDocx(cell){
+  if(!cell) return "";
+  return String(cell.text||"");
+}
+async function imageSizeSafe(src){
+  return new Promise(resolve=>{
+    const img=new Image();
+    img.onload=()=>resolve({w:img.naturalWidth||img.width||1200,h:img.naturalHeight||img.height||900});
+    img.onerror=()=>resolve({w:1200,h:900});
+    img.src=src;
+  });
+}
+async function buildEditableDocxXml(media, rels){
+  syncHeader();
+
+  const colWidths=[700,1250,1700,1900,1200,1250]; // 6列，总约7900 dxa
+  let bodyXml="";
+
+  for(let ti=0;ti<tables.length;ti++){
+    const tbl=tables[ti];
+    bodyXml+='<w:tbl><w:tblPr><w:tblW w:w="0" w:type="auto"/><w:tblBorders><w:top w:val="single" w:sz="12" w:color="000000"/><w:left w:val="single" w:sz="12" w:color="000000"/><w:bottom w:val="single" w:sz="12" w:color="000000"/><w:right w:val="single" w:sz="12" w:color="000000"/><w:insideH w:val="single" w:sz="8" w:color="000000"/><w:insideV w:val="single" w:sz="8" w:color="000000"/></w:tblBorders><w:tblLayout w:type="fixed"/></w:tblPr><w:tblGrid>'+colWidths.map(w=>'<w:gridCol w:w="'+w+'"/>').join("")+'</w:tblGrid>';
+
+    const rowSpanMap={}; // col -> remaining count
+    for(let ri=0;ri<tbl.rows.length;ri++){
+      const row=tbl.rows[ri].slice().sort((a,b)=>(a.col||0)-(b.col||0));
+      const byCol={};
+      row.forEach(c=>{byCol[c.col||0]=c});
+      bodyXml+='<w:tr>';
+      let col=0;
+      while(col<6){
+        if(rowSpanMap[col] && !byCol[col]){
+          bodyXml+=tcXml(pXml("",false,"center"),{vMerge:"continue",width:colWidths[col]});
+          rowSpanMap[col]-=1;
+          if(rowSpanMap[col]<=0) delete rowSpanMap[col];
+          col++;
+          continue;
+        }
+        const cell=byCol[col];
+        if(!cell){
+          bodyXml+=tcXml(pXml("",false,"center"),{width:colWidths[col]});
+          col++;
+          continue;
+        }
+
+        const cls=cell.classes||"";
+        const colspan=cell.colspan||1;
+        const rowspan=cell.rowspan||1;
+        const width=colWidths.slice(col,col+colspan).reduce((a,b)=>a+b,0);
+        let inner="";
+        let align="left", bold=false;
+        let size=22;
+        if(cls.includes("title-cell")){align="center"; bold=true; size=28;}
+        else if(cls.includes("header-cell") || (ti===0 && ri===3)){align="center"; bold=true; size=22;}
+        else if(cls.includes("no-col") || cls.includes("cat-col") || cls.includes("result-col") || cls.includes("remark-col")){align="center"; bold=cls.includes("cat-col")||cls.includes("result-col");}
+
+        if(cell.isPhoto){
+          const photos=(cell.photos||[]).slice(0,8);
+          if(photos.length===0){
+            inner=pXml("添加照片",false,"center",20);
+          }else{
+            for(let pi=0;pi<photos.length;pi++){
+              const info=dataUrlInfoForDocx(photos[pi].src);
+              if(!info) continue;
+              const rId="rIdPhoto_"+ti+"_"+ri+"_"+col+"_"+pi+"_"+Math.floor(Math.random()*100000);
+              const fileName="photo_"+ti+"_"+ri+"_"+col+"_"+pi+"."+info.ext;
+              media.file(fileName, info.base64, {base64:true});
+              rels.push({rId:rId,fileName:fileName});
+              const sizeObj=await imageSizeSafe(photos[pi].src);
+              let targetW=145, targetH=185;
+              inner+=imgXml(rId,targetW,targetH);
+            }
+            if((cell.photos||[]).length>8) inner+=pXml("另有"+((cell.photos||[]).length-8)+"张照片",false,"center",18);
+          }
+        }else if(cls.includes("result-col") && ri>3){
+          inner=pXml(cell.text||"合格",true,"center",22);
+        }else{
+          inner=lineTextXml(getCellTextForDocx(cell),bold,align,size);
+        }
+
+        bodyXml+=tcXml(inner,{colspan:colspan,vMerge:rowspan>1?"restart":null,width:width,valign:"center"});
+        if(rowspan>1){
+          for(let k=0;k<colspan;k++) rowSpanMap[col+k]=rowspan-1;
+        }
+        col+=colspan;
+      }
+      bodyXml+='</w:tr>';
+    }
+    bodyXml+='</w:tbl><w:p/>';
+  }
+
+  return bodyXml;
+}
+
+async function exportWordEditable(){
+  if(typeof JSZip==="undefined"){
+    alert("Word组件未加载成功，请刷新页面后重试。");
+    return;
+  }
+  try{
+    setStatus("正在生成可编辑Word，请稍等...");
+    const zip=new JSZip();
+    const word=zip.folder("word");
+    const media=word.folder("media");
+    const rels=[];
+    const bodyXml=await buildEditableDocxXml(media, rels);
+
+    const documentXml='<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture"><w:body>'+bodyXml+'<w:sectPr><w:pgSz w:w="11906" w:h="16838"/><w:pgMar w:top="720" w:right="720" w:bottom="720" w:left="720" w:header="360" w:footer="360" w:gutter="0"/></w:sectPr></w:body></w:document>';
+    const rootRels='<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rIdOfficeDoc" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/></Relationships>';
+    const docRels='<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'+rels.map(r=>'<Relationship Id="'+r.rId+'" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="media/'+r.fileName+'"/>').join("")+'</Relationships>';
+    const contentTypes='<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Default Extension="jpg" ContentType="image/jpeg"/><Default Extension="jpeg" ContentType="image/jpeg"/><Default Extension="png" ContentType="image/png"/><Default Extension="webp" ContentType="image/webp"/><Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/></Types>';
+
+    zip.file("[Content_Types].xml",contentTypes);
+    zip.folder("_rels").file(".rels",rootRels);
+    word.file("document.xml",documentXml);
+    word.folder("_rels").file("document.xml.rels",docRels);
+
+    const blob=await zip.generateAsync({type:"blob",compression:"DEFLATE",compressionOptions:{level:6}});
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement("a");
+    a.href=url;
+    a.download=getExportBaseName()+"_可编辑版.docx";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    setStatus("可编辑可编辑Word已生成",true);
+    setTimeout(()=>setStatus("",false),1800);
+  }catch(e){
+    console.error(e);
+    alert("可编辑Word导出失败，请减少照片数量或用电脑浏览器导出。");
+    setStatus("",false);
+  }
+}
+
+window.addEventListener("resize",()=>setTimeout(fitMobile,80));
+window.addEventListener("DOMContentLoaded",render);
+window.addEventListener("load",()=>setTimeout(render,100));
+</script>
+</body>
+</html>
