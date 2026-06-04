@@ -80,8 +80,8 @@ input,textarea,select{width:100%;border:1px solid #dbe3ef;border-radius:10px;pad
 .photo-col{overflow:hidden!important;vertical-align:middle!important}
 .photo-box{width:100%!important;max-width:100%!important;overflow:hidden!important;display:block!important;text-align:center!important;padding:4px!important}
 .photo-grid{display:flex!important;flex-direction:column!important;gap:8px!important;align-items:center!important;justify-content:flex-start!important;width:100%!important;max-width:100%!important;overflow:hidden!important}
-.photo-grid>div{width:132px!important;max-width:132px!important;min-height:168px!important;display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;overflow:hidden!important;text-align:center!important;margin:0 auto!important}
-.photo-box img{width:132px!important;height:168px!important;max-width:132px!important;max-height:168px!important;object-fit:contain!important;display:block!important;margin:0 auto!important;border:1px solid #e5e7eb!important;background:#fff!important}
+.photo-grid>div{width:120px!important;max-width:120px!important;min-height:120px!important;display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;overflow:hidden!important;text-align:center!important;margin:0 auto!important}
+.photo-box img{width:120px!important;height:120px!important;max-width:120px!important;max-height:120px!important;object-fit:contain!important;display:block!important;margin:0 auto!important;border:1px solid #e5e7eb!important;background:#fff!important}
 .photo-tools{display:flex!important;justify-content:center!important;gap:6px!important;margin:4px 0 0!important}
 .photo-tools button,button[data-del-photo]{display:inline-block!important;background:#fee2e2!important;color:#991b1b!important;border:0!important;border-radius:8px!important;padding:3px 8px!important;font-size:11px!important;font-weight:900!important}
 .export-root .photo-tools,.export-root .add-photo,.export-root button,.export-root input[type=file]{display:none!important}
@@ -125,11 +125,11 @@ input,textarea,select{width:100%;border:1px solid #dbe3ef;border-radius:10px;pad
   box-sizing:border-box!important;
 }
 .photo-grid > div{
-  width:132px!important;
-  max-width:132px!important;
-  height:168px!important;
-  min-height:168px!important;
-  max-height:168px!important;
+  width:120px!important;
+  max-width:120px!important;
+  height:120px!important;
+  min-height:120px!important;
+  max-height:120px!important;
   display:flex!important;
   flex-direction:column!important;
   align-items:center!important;
@@ -138,13 +138,13 @@ input,textarea,select{width:100%;border:1px solid #dbe3ef;border-radius:10px;pad
   text-align:center!important;
   margin:0 auto!important;
   box-sizing:border-box!important;
-  flex:0 0 168px!important;
+  flex:0 0 120px!important;
 }
 .photo-box img{
-  width:132px!important;
-  height:168px!important;
-  max-width:132px!important;
-  max-height:168px!important;
+  width:120px!important;
+  height:120px!important;
+  max-width:120px!important;
+  max-height:120px!important;
   object-fit:contain!important;
   display:block!important;
   margin:0 auto!important;
@@ -208,31 +208,122 @@ button[data-del-photo]{
   box-sizing:border-box!important;
 }
 .export-root .photo-grid > div{
-  width:132px!important;
-  max-width:132px!important;
-  height:168px!important;
-  min-height:168px!important;
-  max-height:168px!important;
+  width:120px!important;
+  max-width:120px!important;
+  height:120px!important;
+  min-height:120px!important;
+  max-height:120px!important;
   display:flex!important;
   align-items:center!important;
   justify-content:center!important;
   overflow:hidden!important;
   text-align:center!important;
   margin:0 auto!important;
-  flex:0 0 168px!important;
+  flex:0 0 120px!important;
 }
 .export-root .photo-box img,
 .export-root img{
-  width:132px!important;
-  height:168px!important;
-  max-width:132px!important;
-  max-height:168px!important;
+  width:120px!important;
+  height:120px!important;
+  max-width:120px!important;
+  max-height:120px!important;
   object-fit:contain!important;
   display:block!important;
   margin:0 auto!important;
   border:1px solid #e5e7eb!important;
   background:#fff!important;
   box-sizing:border-box!important;
+}
+.export-root .photo-tools,
+.export-root .add-photo,
+.export-root button,
+.export-root input[type=file]{
+  display:none!important;
+}
+
+
+/* ===== 终极无溢出版：表格内限制缩略图数量，照片再多也不撑爆单元格 ===== */
+.template-table{
+  table-layout:fixed!important;
+  border-collapse:collapse!important;
+}
+.template-table td{
+  box-sizing:border-box!important;
+  overflow:hidden!important;
+}
+.photo-col{
+  overflow:hidden!important;
+  vertical-align:middle!important;
+}
+.photo-box{
+  width:100%!important;
+  max-width:100%!important;
+  overflow:hidden!important;
+  display:block!important;
+  text-align:center!important;
+  padding:4px 2px!important;
+  box-sizing:border-box!important;
+}
+.photo-grid{
+  display:flex!important;
+  flex-direction:column!important;
+  gap:6px!important;
+  align-items:center!important;
+  justify-content:center!important;
+  width:100%!important;
+  max-width:100%!important;
+  overflow:hidden!important;
+}
+.photo-grid > div{
+  width:120px!important;
+  height:120px!important;
+  max-width:120px!important;
+  max-height:120px!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  overflow:hidden!important;
+  text-align:center!important;
+  margin:0 auto!important;
+  box-sizing:border-box!important;
+}
+.photo-box img{
+  width:120px!important;
+  height:120px!important;
+  max-width:120px!important;
+  max-height:120px!important;
+  object-fit:contain!important;
+  display:block!important;
+  margin:0 auto!important;
+  border:1px solid #e5e7eb!important;
+  background:#fff!important;
+  box-sizing:border-box!important;
+}
+.photo-more-tip{
+  display:block!important;
+  text-align:center!important;
+  color:#64748b!important;
+  font-size:12px!important;
+  line-height:1.4!important;
+  margin-top:4px!important;
+}
+.photo-tools{
+  display:flex!important;
+  justify-content:center!important;
+  gap:6px!important;
+  margin:3px 0 0!important;
+}
+.photo-tools button,
+button[data-del-photo]{
+  display:inline-block!important;
+  background:#fee2e2!important;
+  color:#991b1b!important;
+  border:0!important;
+  border-radius:8px!important;
+  padding:2px 7px!important;
+  font-size:11px!important;
+  font-weight:900!important;
+  line-height:18px!important;
 }
 .export-root .photo-tools,
 .export-root .add-photo,
@@ -326,22 +417,25 @@ function renderResult(cell){
     '<option '+(v==="不涉及"?"selected":"")+'>不涉及</option>'+
   '</select>';
 }
+
 function renderPhoto(cell){
   const photos=cell.photos||[];
-  let html='<div class="photo-box" data-photo-cell="'+cell.id+'">';
-  if(photos.length) {
+  let html='<div class="photo-box">';
+  if(photos.length){
     html+='<div class="photo-grid">';
-    photos.slice(0,8).forEach((p,i)=>{
-      html+='<div><img src="'+p.src+'"><div class="photo-tools"><button type="button" class="danger" data-del-photo="'+cell.id+'" data-index="'+i+'">删除</button></div></div>';
+    photos.slice(0,2).forEach((p,i)=>{
+      html+='<div><img src="'+p.src+'"><div class="photo-tools"><button type="button" data-del-photo="'+cell.id+'" data-index="'+i+'">删除</button></div></div>';
     });
     html+='</div>';
-    if(photos.length>8) html+='<div style="font-size:11px;color:#64748b">另有'+(photos.length-8)+'张照片</div>';
+    if(photos.length>2){
+      html+='<div class="photo-more-tip">另有 '+(photos.length-2)+' 张照片<br>已保存，不在表格内继续显示</div>';
+    }
   }
   html+='<button type="button" class="add-photo" data-add-photo="'+cell.id+'">添加照片</button>';
-  html+='<input class="file-input" type="file" accept="image/*" multiple data-file-input="'+cell.id+'">';
   html+='</div>';
   return html;
 }
+
 
 function adjustPhotoRowHeights(){
   try{
@@ -360,6 +454,28 @@ function adjustPhotoRowHeights(){
       }
     });
   }catch(e){console.warn("adjustPhotoRowHeights failed",e);}
+}
+
+
+function limitPhotoDisplay(){
+  try{
+    const paper=document.getElementById("paper");
+    if(!paper) return;
+    paper.querySelectorAll(".photo-box").forEach(box=>{
+      const imgs=[...box.querySelectorAll(".photo-grid > div")];
+      const existing=box.querySelector(".photo-more-tip");
+      if(imgs.length>2){
+        imgs.slice(2).forEach(x=>x.style.display="none");
+        if(!existing){
+          const tip=document.createElement("div");
+          tip.className="photo-more-tip";
+          tip.innerHTML="另有 "+(imgs.length-2)+" 张照片<br>已保存，不在表格内继续显示";
+          const grid=box.querySelector(".photo-grid");
+          if(grid) grid.after(tip);
+        }
+      }
+    });
+  }catch(e){console.warn("limitPhotoDisplay failed",e);}
 }
 
 function render(){
@@ -389,6 +505,7 @@ function render(){
   paper.innerHTML=out;
   setTimeout(fitMobile,80);
   setTimeout(adjustPhotoRowHeights,0);
+  setTimeout(limitPhotoDisplay,0);
 }
 function fitMobile(){
   const paper=document.getElementById("paper");
@@ -489,6 +606,18 @@ function cloneForExport(){
       tr.style.minHeight=minH+"px";
       td.style.height=minH+"px";
       td.style.minHeight=minH+"px";
+    }
+  });
+
+  
+  root.querySelectorAll(".photo-box").forEach(box=>{
+    const items=[...box.querySelectorAll(".photo-grid > div")];
+    if(items.length>2){
+      items.slice(2).forEach(x=>x.remove());
+      const tip=document.createElement("div");
+      tip.className="photo-more-tip";
+      tip.textContent="另有 "+(items.length-2)+" 张照片";
+      box.appendChild(tip);
     }
   });
 
@@ -597,7 +726,7 @@ async function exportWordEditable(){
           const width=colW.slice(cell.col||0,(cell.col||0)+colspan).reduce((a,b)=>a+b,0)||1200;
           let inner='';
           if(cell.isPhoto){
-            const photos=(cell.photos||[]).slice(0,4);
+            const photos=(cell.photos||[]).slice(0,2);
             if(!photos.length){inner=docxP("添加照片",false,"center",20);}
             for(let pi=0;pi<photos.length;pi++){
               const info=dataUrlInfoDocx(photos[pi].src); if(!info)continue;
