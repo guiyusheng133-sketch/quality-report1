@@ -46,8 +46,8 @@ input,textarea,select{width:100%;border:1px solid #dbe3ef;border-radius:10px;pad
 .meta-right-cell{font-size:15px!important;font-weight:900;text-align:right}
 .header-cell{font-weight:900;text-align:center}
 .photo-box{min-height:72px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px}
-.photo-grid{display:flex;flex-direction:column;gap:8px;align-items:center;justify-content:flex-start;width:100%;max-width:100%;overflow:hidden}
-.photo-box img{width:145px;height:185px;max-width:145px;max-height:185px;object-fit:contain;display:block;margin:0 auto;border:1px solid #e5e7eb;background:#fff}
+.photo-grid{display:grid;grid-template-columns:1fr 1fr;gap:4px;justify-items:center;align-items:start}
+.photo-box img{max-width:72px;max-height:82px;object-fit:contain;display:block;margin:2px auto}
 .photo-tools{display:flex;gap:5px;justify-content:center;flex-wrap:wrap}
 .photo-tools button{font-size:11px;padding:4px 6px;border-radius:7px}
 .add-photo{background:#e2e8f0;color:#0f172a;font-size:12px;padding:7px 9px}
@@ -76,44 +76,7 @@ input,textarea,select{width:100%;border:1px solid #dbe3ef;border-radius:10px;pad
   button,input[type=file],select{display:none!important}
 }
 
-/* ===== 真DOCX + 真PDF直出版：不导出HTML，不导出假doc ===== */
-.photo-col{overflow:hidden!important;vertical-align:middle!important}
-.photo-box{width:100%!important;max-width:100%!important;overflow:hidden!important;text-align:center!important;padding:4px!important}
-.photo-grid{display:flex!important;flex-direction:column!important;gap:8px!important;align-items:center!important;width:100%!important;max-width:100%!important;overflow:hidden!important}
-.photo-grid>div{width:100%!important;overflow:hidden!important;text-align:center!important}
-.photo-box img{width:auto!important;max-width:150px!important;height:auto!important;max-height:190px!important;object-fit:contain!important;display:block!important;margin:2px auto!important;border:1px solid #e5e7eb!important;background:#fff!important}
-.photo-tools{display:flex!important;justify-content:center!important;gap:6px!important;margin:3px 0 6px!important}
-.photo-tools button,button[data-del-photo]{display:inline-block!important;background:#fee2e2!important;color:#991b1b!important;border:0!important;border-radius:8px!important;padding:3px 8px!important;font-size:11px!important;font-weight:900!important}
-.export-root{position:fixed;left:-100000px;top:0;width:794px;background:#fff;color:#111;z-index:-1}
-.export-root .paper{width:794px!important;min-width:794px!important;max-width:none!important;transform:none!important;background:#fff!important}
-.export-root .photo-col{overflow:hidden!important;vertical-align:middle!important}
-.export-root .photo-box{width:100%!important;max-width:100%!important;overflow:hidden!important;text-align:center!important;padding:4px!important}
-.export-root .photo-grid{display:flex!important;flex-direction:column!important;gap:8px!important;align-items:center!important;width:100%!important;max-width:100%!important;overflow:hidden!important}
-.export-root .photo-grid>div{width:100%!important;overflow:hidden!important;text-align:center!important}
-.export-root .photo-box img,.export-root img{width:auto!important;max-width:150px!important;height:auto!important;max-height:190px!important;object-fit:contain!important;display:block!important;margin:2px auto!important;border:1px solid #e5e7eb!important;background:#fff!important}
-.export-root .photo-tools,.export-root .add-photo,.export-root button,.export-root input[type=file]{display:none!important}
-.export-result-text{display:inline-block;width:100%;text-align:center;font-weight:900}
-
-
-/* ===== 文件大小控制版：图片清晰够用，整体体积可控 ===== */
-.photo-box img{
-  width:auto!important;
-  max-width:135px!important;
-  height:auto!important;
-  max-height:165px!important;
-  object-fit:contain!important;
-}
-.export-root .photo-box img,
-.export-root img{
-  width:auto!important;
-  max-width:135px!important;
-  height:auto!important;
-  max-height:165px!important;
-  object-fit:contain!important;
-}
-
-
-/* ===== 照片格式修正版：清楚但不乱版 ===== */
+/* ===== 稳定修正版：右侧不空白 + 照片格式固定 ===== */
 .photo-col{overflow:hidden!important;vertical-align:middle!important}
 .photo-box{width:100%!important;max-width:100%!important;overflow:hidden!important;display:block!important;text-align:center!important;padding:4px!important}
 .photo-grid{display:flex!important;flex-direction:column!important;gap:8px!important;align-items:center!important;justify-content:flex-start!important;width:100%!important;max-width:100%!important;overflow:hidden!important}
@@ -121,11 +84,6 @@ input,textarea,select{width:100%;border:1px solid #dbe3ef;border-radius:10px;pad
 .photo-box img{width:145px!important;height:185px!important;max-width:145px!important;max-height:185px!important;object-fit:contain!important;display:block!important;margin:0 auto!important;border:1px solid #e5e7eb!important;background:#fff!important}
 .photo-tools{display:flex!important;justify-content:center!important;gap:6px!important;margin:4px 0 0!important}
 .photo-tools button,button[data-del-photo]{display:inline-block!important;background:#fee2e2!important;color:#991b1b!important;border:0!important;border-radius:8px!important;padding:3px 8px!important;font-size:11px!important;font-weight:900!important}
-.export-root .photo-col{overflow:hidden!important;vertical-align:middle!important}
-.export-root .photo-box{width:100%!important;max-width:100%!important;overflow:hidden!important;text-align:center!important;padding:4px!important}
-.export-root .photo-grid{display:flex!important;flex-direction:column!important;gap:8px!important;align-items:center!important;justify-content:flex-start!important;width:100%!important;max-width:100%!important;overflow:hidden!important}
-.export-root .photo-grid>div{width:145px!important;max-width:145px!important;min-height:185px!important;display:flex!important;align-items:center!important;justify-content:center!important;overflow:hidden!important;text-align:center!important;margin:0 auto!important}
-.export-root .photo-box img,.export-root img{width:145px!important;height:185px!important;max-width:145px!important;max-height:185px!important;object-fit:contain!important;display:block!important;margin:0 auto!important;border:1px solid #e5e7eb!important;background:#fff!important}
 .export-root .photo-tools,.export-root .add-photo,.export-root button,.export-root input[type=file]{display:none!important}
 
 </style>
@@ -134,7 +92,7 @@ input,textarea,select{width:100%;border:1px solid #dbe3ef;border-radius:10px;pad
 <div class="app">
   <aside class="panel">
     <h1>质保验收报告</h1>
-    <div class="hint">照片格式修正版：照片清楚且固定在记录方式栏内，不再拉伸变形；Word可编辑，PDF可直出。</div>
+    <div class="hint">全新稳定版：右侧预览打开即显示；Word 导出为真实 .docx；PDF 点击后直接生成 .pdf 文件。</div>
     <div class="btns">
       <button id="exportWordBtn" type="button" onclick="exportWordEditable()">导出 Word</button>
       <button id="exportPdfBtn" type="button" class="green" onclick="exportPDF()">导出 PDF</button>
@@ -162,7 +120,7 @@ input,textarea,select{width:100%;border:1px solid #dbe3ef;border-radius:10px;pad
       2. 记录方式列点击“添加照片”。<br>
       3. 检查结果可选：合格 / 不合格 / 不涉及。<br>
       4. 导出 PDF 为直出文件，不需要手动打印。<br>
-      5. Word为真实可编辑表格；照片固定规格显示，避免版式异常。
+      5. Word 为真实 .docx，适合 WPS / Office 打开。
     </div>
   </aside>
 
@@ -279,7 +237,6 @@ function findCell(id){
 }
 
 async function readImageFile(file){
-  // 文件大小控制版：上传时压缩到报告清晰可用尺寸，避免Word/PDF过大
   const raw=await new Promise((resolve,reject)=>{const r=new FileReader();r.onload=e=>resolve(e.target.result);r.onerror=reject;r.readAsDataURL(file);});
   return await compressDataUrl(raw,1280,0.78);
 }
@@ -314,10 +271,10 @@ document.getElementById("paper").addEventListener("change",e=>{
     const files=[...input.files].filter(f=>f.type.startsWith("image/"));
     (async()=>{
       cell.photos=cell.photos||[];
-      for(let i=0;i<files.length;i++){setStatus("正在读取照片明细 "+(i+1)+"/"+files.length+"...");cell.photos.push({src:await readImageFile(files[i])});}
+      for(let i=0;i<files.length;i++){setStatus("正在压缩上传照片 "+(i+1)+"/"+files.length+"...");cell.photos.push({src:await readImageFile(files[i])});}
       input.value="";
       render();
-      setStatus("照片明细上传完成",true);
+      setStatus("照片上传完成",true);
       setTimeout(()=>setStatus("",false),1200);
     })();
   }
@@ -349,98 +306,6 @@ function cloneForExport(){
   return root;
 }
 function cleanup(root){if(root&&root.parentNode)root.parentNode.removeChild(root)}
-
-function dataUrlInfo(dataUrl){
-  const m=String(dataUrl||"").match(/^data:(image\/(png|jpeg|jpg|webp));base64,(.*)$/i);
-  if(!m) return null;
-  let ext=(m[2]||"jpg").toLowerCase();
-  if(ext==="jpeg") ext="jpg";
-  return {mime:m[1], ext, base64:m[3]};
-}
-function photoPageBreak(){
-  return '<w:p><w:r><w:br w:type="page"/></w:r></w:p>';
-}
-function wordTextParagraph(text, size=24, bold=false){
-  const safe=String(text||"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&apos;"}[m]));
-  return '<w:p><w:pPr><w:jc w:val="center"/></w:pPr><w:r><w:rPr>'+(bold?'<w:b/>':'')+'<w:sz w:val="'+size+'"/></w:rPr><w:t>'+safe+'</w:t></w:r></w:p>';
-}
-function collectOriginalPhotos(){
-  const list=[];
-  for(let ti=0;ti<tables.length;ti++){
-    const tbl=tables[ti];
-    for(let ri=0;ri<tbl.rows.length;ri++){
-      const row=tbl.rows[ri];
-      let no="", category="", content="";
-      for(const c of row){
-        const cls=c.classes||"";
-        if(cls.includes("no-col")) no=c.text||"";
-        if(cls.includes("cat-col")) category=c.text||"";
-        if(cls.includes("content-col")) content=c.text||"";
-      }
-      for(const cell of row){
-        if(cell.isPhoto && cell.photos && cell.photos.length){
-          cell.photos.forEach((p,idx)=>list.push({no,category,content,index:idx+1,src:p.src}));
-        }
-      }
-    }
-  }
-  return list;
-}
-function imageNaturalSize(src){
-  return new Promise((resolve)=>{
-    const img=new Image();
-    img.onload=()=>resolve({w:img.naturalWidth||img.width||1200,h:img.naturalHeight||img.height||900});
-    img.onerror=()=>resolve({w:1200,h:900});
-    img.src=src;
-  });
-}
-function cloneForExportFinal(){
-  render();
-  const source=document.getElementById("paper");
-  const root=document.createElement("div");
-  root.className="export-root";
-  const clone=source.cloneNode(true);
-  root.appendChild(clone);
-  document.body.appendChild(root);
-  clone.querySelectorAll("button,input[type=file],.photo-tools,.add-photo").forEach(el=>el.remove());
-  clone.querySelectorAll("select").forEach(sel=>{
-    const span=document.createElement("span");
-    span.className="export-result-text";
-    span.textContent=sel.value||"合格";
-    sel.replaceWith(span);
-  });
-  clone.querySelectorAll("[contenteditable]").forEach(el=>el.removeAttribute("contenteditable"));
-
-  clone.querySelectorAll(".photo-box").forEach(box=>{
-    box.querySelectorAll("button,input[type=file],.photo-tools,.add-photo").forEach(el=>el.remove());
-    const grid=box.querySelector(".photo-grid");
-    if(grid){
-      grid.style.display="flex";
-      grid.style.flexDirection="column";
-      grid.style.gap="8px";
-      grid.style.alignItems="center";
-      grid.style.justifyContent="flex-start";
-      grid.style.width="100%";
-      grid.style.maxWidth="100%";
-      grid.style.overflow="hidden";
-    }
-    box.querySelectorAll("img").forEach(img=>{
-      img.style.width="145px";
-      img.style.height="185px";
-      img.style.maxWidth="145px";
-      img.style.maxHeight="185px";
-      img.style.objectFit="contain";
-      img.style.display="block";
-      img.style.margin="0 auto";
-      img.style.border="1px solid #e5e7eb";
-      img.style.background="#fff";
-    });
-  });
-
-  });
-  return root;
-}
-
 async function canvasForTable(table,scale=1.05){
   return await html2canvas(table,{backgroundColor:"#fff",scale:scale,useCORS:true,allowTaint:true,scrollX:0,scrollY:0,logging:false,windowWidth:900});
 }
@@ -449,323 +314,144 @@ function imageParagraph(rId,widthPx,heightPx){
   return '<w:p><w:pPr><w:jc w:val="center"/></w:pPr><w:r><w:drawing><wp:inline distT="0" distB="0" distL="0" distR="0"><wp:extent cx="'+cx+'" cy="'+cy+'"/><wp:effectExtent l="0" t="0" r="0" b="0"/><wp:docPr id="'+Math.floor(Math.random()*100000)+'" name="report"/><wp:cNvGraphicFramePr><a:graphicFrameLocks noChangeAspect="1"/></wp:cNvGraphicFramePr><a:graphic><a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/picture"><pic:pic><pic:nvPicPr><pic:cNvPr id="0" name="report.jpg"/><pic:cNvPicPr/></pic:nvPicPr><pic:blipFill><a:blip r:embed="'+rId+'"/><a:stretch><a:fillRect/></a:stretch></pic:blipFill><pic:spPr><a:xfrm><a:off x="0" y="0"/><a:ext cx="'+cx+'" cy="'+cy+'"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom></pic:spPr></pic:pic></a:graphicData></a:graphic></wp:inline></w:drawing></w:r></w:p>';
 }
 
-
 async function exportPDF(){
-  if(typeof html2canvas==="undefined" || !window.jspdf){
-    alert("PDF组件未加载成功，请刷新页面后重试。");
-    return;
-  }
-  setStatus("正在生成PDF文件，请稍等...");
-  const root=cloneForExportFinal();
   try{
+    if(typeof html2canvas==="undefined"||!window.jspdf){alert("PDF组件加载失败，请刷新页面后再试");return;}
+    setStatus("正在生成 PDF，请稍等...");
+    const root=cloneForExport();
+    const tables=[...root.querySelectorAll("table")];
     const {jsPDF}=window.jspdf;
     const pdf=new jsPDF("p","mm","a4");
     const pageW=210,pageH=297,margin=8,imgW=pageW-margin*2;
     let first=true;
-    const tableEls=[...root.querySelectorAll("table")];
-    for(let i=0;i<tableEls.length;i++){
-      setStatus("正在生成PDF表格 "+(i+1)+"/"+tableEls.length+"...");
-      const canvas=await html2canvas(tableEls[i],{backgroundColor:"#fff",scale:1.65,useCORS:true,allowTaint:true,scrollX:0,scrollY:0,logging:false,windowWidth:900});
+    for(let i=0;i<tables.length;i++){
+      setStatus("正在生成 PDF "+(i+1)+"/"+tables.length+"...");
+      const canvas=await canvasForTable(tables[i],1.05);
       const imgH=imgW*canvas.height/canvas.width;
-      if(imgH <= pageH-margin*2){
-        if(!first)pdf.addPage(); first=false;
-        pdf.addImage(canvas.toDataURL("image/jpeg",0.86),"JPEG",margin,margin,imgW,imgH);
-      }else{
-        const sliceH=Math.floor(canvas.width*(pageH-margin*2)/imgW);
-        const partCanvas=document.createElement("canvas");
-        const ctx=partCanvas.getContext("2d");
-        partCanvas.width=canvas.width; partCanvas.height=sliceH;
-        let y=0;
-        while(y<canvas.height){
-          if(!first)pdf.addPage(); first=false;
-          ctx.fillStyle="#fff";ctx.fillRect(0,0,partCanvas.width,partCanvas.height);
-          const h=Math.min(sliceH,canvas.height-y);
-          ctx.drawImage(canvas,0,y,canvas.width,h,0,0,canvas.width,h);
-          pdf.addImage(partCanvas.toDataURL("image/jpeg",0.86),"JPEG",margin,margin,imgW,pageH-margin*2);
-          y+=sliceH;
-        }
-      }
-      canvas.width=1; canvas.height=1;
+      if(!first)pdf.addPage();first=false;
+      pdf.addImage(canvas.toDataURL("image/jpeg",0.82),"JPEG",margin,margin,imgW,Math.min(imgH,pageH-margin*2));
+      canvas.width=1;canvas.height=1;
     }
-
-    const originalPhotos=collectOriginalPhotos();
-    for(let pi=0;pi<originalPhotos.length;pi++){
-      const p=originalPhotos[pi];
-      setStatus("正在写入PDF照片 "+(pi+1)+"/"+originalPhotos.length+"...");
-      const size=await imageNaturalSize(p.src);
-      const maxW=pageW-margin*2;
-      const maxH=pageH-margin*2-28;
-      let w=Math.min(maxW,170);
-      let h=w*size.h/size.w;
-      if(h>maxH){h=maxH;w=h*size.w/size.h;}
-      pdf.addPage();
-      pdf.setFontSize(11);
-      pdf.text("照片明细 "+(pi+1)+"/"+originalPhotos.length+"  序号："+(p.no||"-")+"  类别："+(p.category||"-"), margin, margin+4);
-      const fmt=(p.src.indexOf("image/png")>=0)?"PNG":"JPEG";
-      pdf.addImage(p.src, fmt, (pageW-w)/2, margin+12, w, h);
-    }
-
     pdf.save(getExportBaseName()+".pdf");
-    setStatus("PDF已生成",true);
-    setTimeout(()=>setStatus("",false),1800);
-  }catch(e){
-    console.error(e);
-    alert("PDF导出失败：照片可能太多或文件过大，请用电脑浏览器导出。");
-    setStatus("",false);
-  }finally{
     cleanup(root);
-  }
+    setStatus("PDF 已生成",true);setTimeout(()=>setStatus("",false),1500);
+  }catch(e){console.error(e);alert("PDF生成失败，请减少照片数量或用电脑浏览器导出");setStatus("",false);}
 }
 
 async function exportWord(){
-  if(typeof JSZip==="undefined" || typeof html2canvas==="undefined"){
-    alert("Word组件未加载成功，请刷新页面后重试。");
-    return;
-  }
-  setStatus("正在生成真实DOCX，请稍等...");
-  const root=cloneForExportFinal();
   try{
-    const zip=new JSZip();
-    const word=zip.folder("word");
-    const media=word.folder("media");
-    const rels=[];
-    let bodyXml="";
-    const tableEls=[...root.querySelectorAll("table")];
-    for(let i=0;i<tableEls.length;i++){
-      setStatus("正在生成Word表格 "+(i+1)+"/"+tableEls.length+"...");
-      const canvas=await html2canvas(tableEls[i],{backgroundColor:"#fff",scale:1.65,useCORS:true,allowTaint:true,scrollX:0,scrollY:0,logging:false,windowWidth:900});
-      const fileName="report_table_"+(i+1)+".jpg";
-      const rId="rIdTable"+(i+1);
-      media.file(fileName,canvas.toDataURL("image/jpeg",0.86).split(",")[1],{base64:true});
-      rels.push({rId,fileName});
+    if(typeof JSZip==="undefined"||typeof html2canvas==="undefined"){alert("Word组件加载失败，请刷新页面后再试");return;}
+    setStatus("正在生成 Word，请稍等...");
+    const root=cloneForExport();
+    const tables=[...root.querySelectorAll("table")];
+    const zip=new JSZip();const word=zip.folder("word");const media=word.folder("media");
+    const rels=[];let bodyXml="";
+    for(let i=0;i<tables.length;i++){
+      setStatus("正在生成 Word "+(i+1)+"/"+tables.length+"...");
+      const canvas=await canvasForTable(tables[i],1.05);
+      const fileName="report_"+(i+1)+".jpg";const rId="rId"+(i+1);
+      media.file(fileName,canvas.toDataURL("image/jpeg",0.82).split(",")[1],{base64:true});
+      rels.push({rId:rId,fileName:fileName});
       const targetW=602,targetH=Math.round(targetW*canvas.height/canvas.width);
       bodyXml+=imageParagraph(rId,targetW,targetH)+"<w:p/>";
-      canvas.width=1; canvas.height=1;
+      canvas.width=1;canvas.height=1;
     }
-
-    const originalPhotos=collectOriginalPhotos();
-    if(originalPhotos.length){
-      bodyXml+=photoPageBreak();
-      bodyXml+=wordTextParagraph("照片明细页",32,true);
-    }
-    for(let pi=0;pi<originalPhotos.length;pi++){
-      const p=originalPhotos[pi];
-      const info=dataUrlInfo(p.src);
-      if(!info) continue;
-      setStatus("正在写入Word照片 "+(pi+1)+"/"+originalPhotos.length+"...");
-      const size=await imageNaturalSize(p.src);
-      const fileName="original_"+(pi+1)+"."+info.ext;
-      const rId="rIdOriginal"+(pi+1);
-      media.file(fileName,info.base64,{base64:true});
-      rels.push({rId,fileName});
-      bodyXml+=photoPageBreak();
-      bodyXml+=wordTextParagraph("照片明细 "+(pi+1)+"/"+originalPhotos.length+"　序号："+(p.no||"-")+"　类别："+(p.category||"-"),22,true);
-      const targetW=520;
-      let targetH=Math.round(targetW*size.h/size.w);
-      if(targetH>720){targetH=720;}
-      bodyXml+=imageParagraph(rId,targetW,targetH);
-    }
-
     const documentXml='<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture"><w:body>'+bodyXml+'<w:sectPr><w:pgSz w:w="11906" w:h="16838"/><w:pgMar w:top="720" w:right="720" w:bottom="720" w:left="720" w:header="360" w:footer="360" w:gutter="0"/></w:sectPr></w:body></w:document>';
     const rootRels='<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rIdOfficeDoc" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/></Relationships>';
     const docRels='<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'+rels.map(r=>'<Relationship Id="'+r.rId+'" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="media/'+r.fileName+'"/>').join("")+'</Relationships>';
-    const contentTypes='<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Default Extension="jpg" ContentType="image/jpeg"/><Default Extension="jpeg" ContentType="image/jpeg"/><Default Extension="png" ContentType="image/png"/><Default Extension="webp" ContentType="image/webp"/><Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/></Types>';
-    zip.file("[Content_Types].xml",contentTypes);
-    zip.folder("_rels").file(".rels",rootRels);
-    word.file("document.xml",documentXml);
-    word.folder("_rels").file("document.xml.rels",docRels);
+    const contentTypes='<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Default Extension="jpg" ContentType="image/jpeg"/><Default Extension="jpeg" ContentType="image/jpeg"/><Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/></Types>';
+    zip.file("[Content_Types].xml",contentTypes);zip.folder("_rels").file(".rels",rootRels);word.file("document.xml",documentXml);word.folder("_rels").file("document.xml.rels",docRels);
     const blob=await zip.generateAsync({type:"blob",compression:"DEFLATE",compressionOptions:{level:6}});
-    const url=URL.createObjectURL(blob);
-    const a=document.createElement("a");
-    a.href=url;
-    a.download=getExportBaseName()+".docx";
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-    setStatus("可编辑Word已生成",true);
-    setTimeout(()=>setStatus("",false),1800);
-  }catch(e){
-    console.error(e);
-    alert("Word导出失败：照片可能太多或文件过大，请用电脑浏览器导出。");
-    setStatus("",false);
-  }finally{
+    const url=URL.createObjectURL(blob);const a=document.createElement("a");a.href=url;a.download=getExportBaseName()+".docx";document.body.appendChild(a);a.click();document.body.removeChild(a);URL.revokeObjectURL(url);
     cleanup(root);
-  }
+    setStatus("Word 已生成",true);setTimeout(()=>setStatus("",false),1500);
+  }catch(e){console.error(e);alert("Word生成失败，请减少照片数量或用电脑浏览器导出");setStatus("",false);}
 }
 
 
-/* ===== 可编辑Word导出：真实表格，不再整表截图 ===== */
-function xmlEscapeText(s){
-  return String(s||"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&apos;"}[m]));
+/* ===== 安全可编辑Word导出：不影响页面渲染 ===== */
+function xmlSafe(s){return String(s||"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&apos;"}[m]));}
+function docxP(text,bold=false,align="left",size=22){
+  return '<w:p><w:pPr><w:jc w:val="'+align+'"/></w:pPr><w:r><w:rPr>'+(bold?'<w:b/>':'')+'<w:sz w:val="'+size+'"/></w:rPr><w:t xml:space="preserve">'+xmlSafe(text)+'</w:t></w:r></w:p>';
 }
-function dataUrlInfoForDocx(dataUrl){
+function docxTc(inner,colspan=1,width=1200){
+  const gs=colspan>1?'<w:gridSpan w:val="'+colspan+'"/>':'';
+  return '<w:tc><w:tcPr><w:tcW w:w="'+width+'" w:type="dxa"/>'+gs+'<w:vAlign w:val="center"/></w:tcPr>'+inner+'</w:tc>';
+}
+function dataUrlInfoDocx(dataUrl){
   const m=String(dataUrl||"").match(/^data:(image\/(png|jpeg|jpg|webp));base64,(.*)$/i);
-  if(!m) return null;
-  let ext=(m[2]||"jpg").toLowerCase();
-  if(ext==="jpeg") ext="jpg";
-  return {mime:m[1], ext, base64:m[3]};
+  if(!m)return null;
+  let ext=(m[2]||"jpg").toLowerCase(); if(ext==="jpeg")ext="jpg";
+  return {ext,base64:m[3]};
 }
-function pXml(text, bold=false, align="left", size=22){
-  const t=xmlEscapeText(text);
-  const jc=align?'<w:jc w:val="'+align+'"/>':'';
-  return '<w:p><w:pPr>'+jc+'</w:pPr><w:r><w:rPr>'+(bold?'<w:b/>':'')+'<w:sz w:val="'+size+'"/></w:rPr><w:t xml:space="preserve">'+t+'</w:t></w:r></w:p>';
+function docxImg(rId,w=120,h=150){
+  const cx=Math.round(w*9525),cy=Math.round(h*9525);
+  return '<w:p><w:pPr><w:jc w:val="center"/></w:pPr><w:r><w:drawing><wp:inline distT="0" distB="0" distL="0" distR="0"><wp:extent cx="'+cx+'" cy="'+cy+'"/><wp:docPr id="'+Math.floor(Math.random()*100000)+'" name="photo"/><a:graphic xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main"><a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/picture"><pic:pic xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture"><pic:nvPicPr><pic:cNvPr id="0" name="photo"/><pic:cNvPicPr/></pic:nvPicPr><pic:blipFill><a:blip r:embed="'+rId+'"/><a:stretch><a:fillRect/></a:stretch></pic:blipFill><pic:spPr><a:xfrm><a:off x="0" y="0"/><a:ext cx="'+cx+'" cy="'+cy+'"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom></pic:spPr></pic:pic></a:graphicData></a:graphic></wp:inline></w:drawing></w:r></w:p>';
 }
-function lineTextXml(text, bold=false, align="left", size=22){
-  const parts=String(text||"").split(/\n/);
-  return parts.map((x,i)=>pXml(x,bold,align,size)).join("");
-}
-function tcXml(inner, opts={}){
-  const gridSpan=opts.colspan&&opts.colspan>1?'<w:gridSpan w:val="'+opts.colspan+'"/>':'';
-  let vMerge='';
-  if(opts.vMerge==="restart") vMerge='<w:vMerge w:val="restart"/>';
-  if(opts.vMerge==="continue") vMerge='<w:vMerge/>';
-  const valign='<w:vAlign w:val="'+(opts.valign||"center")+'"/>';
-  const shade=opts.shade?'<w:shd w:fill="'+opts.shade+'"/>':'';
-  const width=opts.width?'<w:tcW w:w="'+opts.width+'" w:type="dxa"/>':'';
-  return '<w:tc><w:tcPr>'+width+gridSpan+vMerge+valign+shade+'</w:tcPr>'+inner+'</w:tc>';
-}
-function imgXml(rId, widthPx, heightPx){
-  const cx=Math.round(widthPx*9525), cy=Math.round(heightPx*9525);
-  return '<w:p><w:pPr><w:jc w:val="center"/></w:pPr><w:r><w:drawing><wp:inline distT="0" distB="0" distL="0" distR="0"><wp:extent cx="'+cx+'" cy="'+cy+'"/><wp:effectExtent l="0" t="0" r="0" b="0"/><wp:docPr id="'+Math.floor(Math.random()*999999)+'" name="photo"/><wp:cNvGraphicFramePr><a:graphicFrameLocks noChangeAspect="1"/></wp:cNvGraphicFramePr><a:graphic><a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/picture"><pic:pic><pic:nvPicPr><pic:cNvPr id="0" name="photo"/><pic:cNvPicPr/></pic:nvPicPr><pic:blipFill><a:blip r:embed="'+rId+'"/><a:stretch><a:fillRect/></a:stretch></pic:blipFill><pic:spPr><a:xfrm><a:off x="0" y="0"/><a:ext cx="'+cx+'" cy="'+cy+'"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom></pic:spPr></pic:pic></a:graphicData></a:graphic></wp:inline></w:drawing></w:r></w:p>';
-}
-function pageBreakXml(){
-  return '<w:p><w:r><w:br w:type="page"/></w:r></w:p>';
-}
-function getCellTextForDocx(cell){
-  if(!cell) return "";
-  return String(cell.text||"");
-}
-async function imageSizeSafe(src){
-  return new Promise(resolve=>{
-    const img=new Image();
-    img.onload=()=>resolve({w:img.naturalWidth||img.width||1200,h:img.naturalHeight||img.height||900});
-    img.onerror=()=>resolve({w:1200,h:900});
-    img.src=src;
-  });
-}
-async function buildEditableDocxXml(media, rels){
-  syncHeader();
-
-  const colWidths=[700,1250,1700,1900,1200,1250]; // 6列，总约7900 dxa
-  let bodyXml="";
-
-  for(let ti=0;ti<tables.length;ti++){
-    const tbl=tables[ti];
-    bodyXml+='<w:tbl><w:tblPr><w:tblW w:w="0" w:type="auto"/><w:tblBorders><w:top w:val="single" w:sz="12" w:color="000000"/><w:left w:val="single" w:sz="12" w:color="000000"/><w:bottom w:val="single" w:sz="12" w:color="000000"/><w:right w:val="single" w:sz="12" w:color="000000"/><w:insideH w:val="single" w:sz="8" w:color="000000"/><w:insideV w:val="single" w:sz="8" w:color="000000"/></w:tblBorders><w:tblLayout w:type="fixed"/></w:tblPr><w:tblGrid>'+colWidths.map(w=>'<w:gridCol w:w="'+w+'"/>').join("")+'</w:tblGrid>';
-
-    const rowSpanMap={}; // col -> remaining count
-    for(let ri=0;ri<tbl.rows.length;ri++){
-      const row=tbl.rows[ri].slice().sort((a,b)=>(a.col||0)-(b.col||0));
-      const byCol={};
-      row.forEach(c=>{byCol[c.col||0]=c});
-      bodyXml+='<w:tr>';
-      let col=0;
-      while(col<6){
-        if(rowSpanMap[col] && !byCol[col]){
-          bodyXml+=tcXml(pXml("",false,"center"),{vMerge:"continue",width:colWidths[col]});
-          rowSpanMap[col]-=1;
-          if(rowSpanMap[col]<=0) delete rowSpanMap[col];
-          col++;
-          continue;
-        }
-        const cell=byCol[col];
-        if(!cell){
-          bodyXml+=tcXml(pXml("",false,"center"),{width:colWidths[col]});
-          col++;
-          continue;
-        }
-
-        const cls=cell.classes||"";
-        const colspan=cell.colspan||1;
-        const rowspan=cell.rowspan||1;
-        const width=colWidths.slice(col,col+colspan).reduce((a,b)=>a+b,0);
-        let inner="";
-        let align="left", bold=false;
-        let size=22;
-        if(cls.includes("title-cell")){align="center"; bold=true; size=28;}
-        else if(cls.includes("header-cell") || (ti===0 && ri===3)){align="center"; bold=true; size=22;}
-        else if(cls.includes("no-col") || cls.includes("cat-col") || cls.includes("result-col") || cls.includes("remark-col")){align="center"; bold=cls.includes("cat-col")||cls.includes("result-col");}
-
-        if(cell.isPhoto){
-          const photos=(cell.photos||[]).slice(0,8);
-          if(photos.length===0){
-            inner=pXml("添加照片",false,"center",20);
-          }else{
-            for(let pi=0;pi<photos.length;pi++){
-              const info=dataUrlInfoForDocx(photos[pi].src);
-              if(!info) continue;
-              const rId="rIdPhoto_"+ti+"_"+ri+"_"+col+"_"+pi+"_"+Math.floor(Math.random()*100000);
-              const fileName="photo_"+ti+"_"+ri+"_"+col+"_"+pi+"."+info.ext;
-              media.file(fileName, info.base64, {base64:true});
-              rels.push({rId:rId,fileName:fileName});
-              const sizeObj=await imageSizeSafe(photos[pi].src);
-              let targetW=145, targetH=185;
-              inner+=imgXml(rId,targetW,targetH);
-            }
-            if((cell.photos||[]).length>8) inner+=pXml("另有"+((cell.photos||[]).length-8)+"张照片",false,"center",18);
-          }
-        }else if(cls.includes("result-col") && ri>3){
-          inner=pXml(cell.text||"合格",true,"center",22);
-        }else{
-          inner=lineTextXml(getCellTextForDocx(cell),bold,align,size);
-        }
-
-        bodyXml+=tcXml(inner,{colspan:colspan,vMerge:rowspan>1?"restart":null,width:width,valign:"center"});
-        if(rowspan>1){
-          for(let k=0;k<colspan;k++) rowSpanMap[col+k]=rowspan-1;
-        }
-        col+=colspan;
-      }
-      bodyXml+='</w:tr>';
-    }
-    bodyXml+='</w:tbl><w:p/>';
-  }
-
-  return bodyXml;
-}
-
 async function exportWordEditable(){
-  if(typeof JSZip==="undefined"){
-    alert("Word组件未加载成功，请刷新页面后重试。");
-    return;
-  }
+  if(typeof JSZip==="undefined"){alert("Word组件加载失败，请刷新页面后重试");return;}
   try{
-    setStatus("正在生成可编辑Word，请稍等...");
-    const zip=new JSZip();
-    const word=zip.folder("word");
-    const media=word.folder("media");
-    const rels=[];
-    const bodyXml=await buildEditableDocxXml(media, rels);
-
-    const documentXml='<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture"><w:body>'+bodyXml+'<w:sectPr><w:pgSz w:w="11906" w:h="16838"/><w:pgMar w:top="720" w:right="720" w:bottom="720" w:left="720" w:header="360" w:footer="360" w:gutter="0"/></w:sectPr></w:body></w:document>';
+    syncHeader();
+    setStatus("正在生成可编辑Word...");
+    const zip=new JSZip(), word=zip.folder("word"), media=word.folder("media");
+    const rels=[]; let body='';
+    const colW=[650,1150,1900,1600,1050,950];
+    for(let ti=0;ti<tables.length;ti++){
+      const tbl=tables[ti];
+      body+='<w:tbl><w:tblPr><w:tblBorders><w:top w:val="single" w:sz="10" w:color="000000"/><w:left w:val="single" w:sz="10" w:color="000000"/><w:bottom w:val="single" w:sz="10" w:color="000000"/><w:right w:val="single" w:sz="10" w:color="000000"/><w:insideH w:val="single" w:sz="8" w:color="000000"/><w:insideV w:val="single" w:sz="8" w:color="000000"/></w:tblBorders><w:tblLayout w:type="fixed"/></w:tblPr><w:tblGrid>'+colW.map(w=>'<w:gridCol w:w="'+w+'"/>').join("")+'</w:tblGrid>';
+      for(let ri=0;ri<tbl.rows.length;ri++){
+        const row=tbl.rows[ri];
+        body+='<w:tr>';
+        for(const cell of row){
+          const cls=cell.classes||"";
+          const colspan=cell.colspan||1;
+          const width=colW.slice(cell.col||0,(cell.col||0)+colspan).reduce((a,b)=>a+b,0)||1200;
+          let inner='';
+          if(cell.isPhoto){
+            const photos=(cell.photos||[]).slice(0,4);
+            if(!photos.length){inner=docxP("添加照片",false,"center",20);}
+            for(let pi=0;pi<photos.length;pi++){
+              const info=dataUrlInfoDocx(photos[pi].src); if(!info)continue;
+              const rId='rIdImg_'+ti+'_'+ri+'_'+pi+'_'+Math.floor(Math.random()*9999);
+              const fn='img_'+ti+'_'+ri+'_'+pi+'.'+info.ext;
+              media.file(fn,info.base64,{base64:true});
+              rels.push({rId,fileName:fn});
+              inner+=docxImg(rId,120,150);
+            }
+          }else{
+            const align=(cls.includes("title-cell")||cls.includes("header-cell")||cls.includes("no-col")||cls.includes("cat-col")||cls.includes("result-col")||cls.includes("remark-col"))?"center":"left";
+            const bold=cls.includes("title-cell")||cls.includes("header-cell")||cls.includes("cat-col")||cls.includes("result-col");
+            const size=cls.includes("title-cell")?28:22;
+            inner=String(cell.text||"").split(/\n/).map(t=>docxP(t,bold,align,size)).join("");
+          }
+          body+=docxTc(inner,colspan,width);
+        }
+        body+='</w:tr>';
+      }
+      body+='</w:tbl><w:p/>';
+    }
+    const documentXml='<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture"><w:body>'+body+'<w:sectPr><w:pgSz w:w="11906" w:h="16838"/><w:pgMar w:top="720" w:right="720" w:bottom="720" w:left="720" w:header="360" w:footer="360" w:gutter="0"/></w:sectPr></w:body></w:document>';
     const rootRels='<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rIdOfficeDoc" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/></Relationships>';
     const docRels='<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'+rels.map(r=>'<Relationship Id="'+r.rId+'" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="media/'+r.fileName+'"/>').join("")+'</Relationships>';
     const contentTypes='<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Default Extension="jpg" ContentType="image/jpeg"/><Default Extension="jpeg" ContentType="image/jpeg"/><Default Extension="png" ContentType="image/png"/><Default Extension="webp" ContentType="image/webp"/><Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/></Types>';
-
-    zip.file("[Content_Types].xml",contentTypes);
-    zip.folder("_rels").file(".rels",rootRels);
-    word.file("document.xml",documentXml);
-    word.folder("_rels").file("document.xml.rels",docRels);
-
+    zip.file("[Content_Types].xml",contentTypes); zip.folder("_rels").file(".rels",rootRels); word.file("document.xml",documentXml); word.folder("_rels").file("document.xml.rels",docRels);
     const blob=await zip.generateAsync({type:"blob",compression:"DEFLATE",compressionOptions:{level:6}});
-    const url=URL.createObjectURL(blob);
-    const a=document.createElement("a");
-    a.href=url;
-    a.download=getExportBaseName()+"_可编辑版.docx";
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-    setStatus("可编辑可编辑Word已生成",true);
-    setTimeout(()=>setStatus("",false),1800);
-  }catch(e){
-    console.error(e);
-    alert("可编辑Word导出失败，请减少照片数量或用电脑浏览器导出。");
-    setStatus("",false);
-  }
+    const url=URL.createObjectURL(blob), a=document.createElement("a"); a.href=url; a.download=getExportBaseName()+"_可编辑版.docx"; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+    setStatus("可编辑Word已生成",true); setTimeout(()=>setStatus("",false),1600);
+  }catch(e){console.error(e);alert("可编辑Word生成失败，请减少照片数量或用电脑浏览器导出");setStatus("",false);}
 }
 
+function saveData(){
+  const data={fields:{reportTitle:val("reportTitle"),stationName:val("stationName"),inspector:val("inspector"),acceptDate:val("acceptDate")},tables:tables};
+  const blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"});
+  const url=URL.createObjectURL(blob);const a=document.createElement("a");a.href=url;a.download=getExportBaseName()+"_草稿.json";a.click();URL.revokeObjectURL(url);
+}
+function loadDataFile(file){
+  const reader=new FileReader();
+  reader.onload=e=>{try{const data=JSON.parse(e.target.result);if(data.fields)Object.entries(data.fields).forEach(([k,v])=>{if(document.getElementById(k))document.getElementById(k).value=v});if(data.tables)tables=data.tables;render();}catch(err){alert("读取失败，请选择正确的JSON文件")}};
+  reader.readAsText(file);
+}
+document.getElementById("loadFile").addEventListener("change",e=>{if(e.target.files[0])loadDataFile(e.target.files[0]);e.target.value=""});
 window.addEventListener("resize",()=>setTimeout(fitMobile,80));
 window.addEventListener("DOMContentLoaded",render);
 window.addEventListener("load",()=>setTimeout(render,100));
