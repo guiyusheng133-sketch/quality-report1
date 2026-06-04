@@ -332,6 +332,31 @@ button[data-del-photo]{
   display:none!important;
 }
 
+
+/* ===== 修复添加照片按钮可点击 ===== */
+#paper .add-photo{
+  display:inline-block!important;
+  cursor:pointer!important;
+  pointer-events:auto!important;
+  background:#e8eef6!important;
+  color:#0f172a!important;
+  border:0!important;
+  border-radius:10px!important;
+  padding:7px 12px!important;
+  font-size:14px!important;
+  font-weight:900!important;
+  margin-top:8px!important;
+}
+#paper .photo-box,
+#paper .photo-col{
+  pointer-events:auto!important;
+}
+.export-root .add-photo,
+.export-root button,
+.export-root input[type=file]{
+  display:none!important;
+}
+
 </style>
 </head>
 <body>
@@ -418,6 +443,7 @@ function renderResult(cell){
   '</select>';
 }
 
+
 function renderPhoto(cell){
   const photos=cell.photos||[];
   let html='<div class="photo-box">';
@@ -435,6 +461,7 @@ function renderPhoto(cell){
   html+='</div>';
   return html;
 }
+
 
 
 function adjustPhotoRowHeights(){
@@ -476,6 +503,40 @@ function limitPhotoDisplay(){
       }
     });
   }catch(e){console.warn("limitPhotoDisplay failed",e);}
+}
+
+
+function openPhotoPicker(cellId){
+  const input=document.createElement("input");
+  input.type="file";
+  input.accept="image/*";
+  input.multiple=true;
+  input.style.position="fixed";
+  input.style.left="-9999px";
+  input.style.top="-9999px";
+  document.body.appendChild(input);
+  input.addEventListener("change", async ()=>{
+    const cell=findCell(cellId);
+    if(!cell){input.remove();return;}
+    if(!cell.photos) cell.photos=[];
+    const files=[...input.files];
+    if(!files.length){input.remove();return;}
+    setStatus("正在上传照片 0/"+files.length+"...");
+    for(let i=0;i<files.length;i++){
+      try{
+        const src=await readImageFile(files[i]);
+        cell.photos.push({src});
+        setStatus("正在上传照片 "+(i+1)+"/"+files.length+"...");
+      }catch(e){
+        console.error(e);
+      }
+    }
+    input.remove();
+    render();
+    setStatus("照片上传完成",true);
+    setTimeout(()=>setStatus("",false),1200);
+  });
+  input.click();
 }
 
 function render(){
@@ -773,6 +834,17 @@ document.getElementById("loadFile").addEventListener("change",e=>{if(e.target.fi
 window.addEventListener("resize",()=>setTimeout(fitMobile,80));
 window.addEventListener("DOMContentLoaded",render);
 window.addEventListener("load",()=>setTimeout(render,100));
+
+// 修复添加照片按钮点击无反应：捕获阶段优先处理
+document.addEventListener("click", function(e){
+  const btn=e.target.closest("[data-add-photo]");
+  if(btn){
+    e.preventDefault();
+    e.stopPropagation();
+    openPhotoPicker(btn.dataset.addPhoto);
+  }
+}, true);
+
 </script>
 </body>
 </html>
